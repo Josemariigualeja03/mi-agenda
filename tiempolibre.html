@@ -180,12 +180,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="modal">
     <h2 id="modal-title">Añadir anime</h2>
 
-    <div class="form-group" id="search-group">
-      <label>Buscar título</label>
-      <input type="text" id="f-search" placeholder="Escribe el nombre y elige de la lista..." oninput="onSearchInput()">
-      <div class="search-results" id="search-results"></div>
-    </div>
-
     <div class="cover-preview" id="cover-preview" style="display:none">
       <img id="cover-img" src="" alt="">
       <div>
@@ -197,6 +191,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="form-group">
       <label>Título</label>
       <input type="text" id="f-titulo" placeholder="Nombre del anime/manga">
+    </div>
+
+    <div class="form-group">
+      <label>URL de la portada (opcional)</label>
+      <input type="text" id="f-cover-url" placeholder="Pega aquí el enlace de una imagen..." oninput="onCoverUrlInput()">
     </div>
 
     <div class="form-row">
@@ -502,69 +501,18 @@ function renderDeporteTab(content){
 window.setFilter = (f) => { activeFilter = f; renderTab(); };
 
 // ----- Jikan API search (anime/manga) -----
-window.onSearchInput = () => {
-  clearTimeout(searchDebounce);
-  const q = document.getElementById('f-search').value.trim();
-  const resultsEl = document.getElementById('search-results');
-  if(q.length < 2){ resultsEl.innerHTML=''; return; }
-  resultsEl.innerHTML = `<div style="padding:8px;display:flex;align-items:center;gap:8px;color:var(--text3);font-size:12px"><span class="spinner-sm"></span> Buscando...</div>`;
-  searchDebounce = setTimeout(()=>doSearch(q), 450);
-};
-
-async function doSearch(q){
-  const type = currentModalType;
-  const endpoint = type==='anime' ? 'anime' : 'manga';
-  const resultsEl = document.getElementById('search-results');
-  try{
-    const url = `https://api.jikan.moe/v4/${endpoint}?q=${encodeURIComponent(q)}&limit=6&sfw`;
-    const res = await fetch(url);
-    if(!res.ok){
-      if(res.status === 429){
-        resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Demasiadas búsquedas, espera 2 segundos y vuelve a escribir</div>`;
-        return;
-      }
-      throw new Error('HTTP '+res.status);
-    }
-    const data = await res.json();
-    const items = data.data || [];
-    if(!items.length){ resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Sin resultados para "${esc(q)}", puedes escribir el título manualmente abajo</div>`; return; }
-    resultsEl.innerHTML = items.map((it,idx)=>{
-      const img = it.images?.jpg?.image_url || '';
-      const title = it.title || it.title_english || '';
-      const meta = type==='anime' ? `${it.episodes||'?'} episodios` : `${it.chapters||'?'} capítulos`;
-      return `<div class="search-result-item" data-idx="${idx}">
-        <img src="${img}" alt="" onerror="this.style.display='none'">
-        <div><div class="sr-title">${esc(title)}</div><div class="sr-meta">${meta}</div></div>
-      </div>`;
-    }).join('');
-    window._searchCache = items;
-    resultsEl.querySelectorAll('.search-result-item').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        const it = window._searchCache[parseInt(el.dataset.idx)];
-        selectSearchResult({
-          title: it.title || it.title_english || '',
-          img: it.images?.jpg?.image_url || '',
-          total: it.episodes || it.chapters || null
-        });
-      });
-    });
-  }catch(e){
-    resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">No se pudo conectar con la base de datos (${esc(e.message)}). Escribe el título manualmente abajo.</div>`;
-  }
-}
-
-window.selectSearchResult = (data) => {
-  selectedCover = data.img;
-  document.getElementById('f-titulo').value = data.title;
-  if(data.total) document.getElementById('f-total').value = data.total;
-  document.getElementById('cover-img').src = data.img;
-  document.getElementById('cover-title').textContent = data.title;
+window.onCoverUrlInput = () => {
+  const url = document.getElementById('f-cover-url').value.trim();
+  if(!url){ document.getElementById('cover-preview').style.display='none'; selectedCover=null; return; }
+  selectedCover = url;
+  document.getElementById('cover-img').src = url;
+  document.getElementById('cover-title').textContent = 'Vista previa';
   document.getElementById('cover-preview').style.display = 'flex';
-  document.getElementById('search-results').innerHTML = '';
-  document.getElementById('f-search').value = '';
 };
+
 window.clearCover = () => {
   selectedCover = null;
+  document.getElementById('f-cover-url').value = '';
   document.getElementById('cover-preview').style.display = 'none';
 };
 
@@ -574,8 +522,7 @@ window.openModal = (type) => {
   currentModalType = type; editId = null; selectedCover = null; currentRating = 0;
   document.getElementById('modal-title').textContent = type==='anime' ? 'Añadir anime' : 'Añadir manga';
   document.getElementById('f-progreso-label').textContent = type==='anime' ? 'Episodios' : 'Capítulos';
-  document.getElementById('f-search').value='';
-  document.getElementById('search-results').innerHTML='';
+  document.getElementById('f-cover-url').value='';
   document.getElementById('cover-preview').style.display='none';
   document.getElementById('f-titulo').value='';
   document.getElementById('f-estado').value='pendiente';
@@ -600,11 +547,10 @@ window.editTitulo = (type, id) => {
   currentModalType = type; editId = id; selectedCover = it.cover || null; currentRating = it.rating || 0;
   document.getElementById('modal-title').textContent = 'Editar';
   document.getElementById('f-progreso-label').textContent = type==='anime' ? 'Episodios' : 'Capítulos';
-  document.getElementById('f-search').value='';
-  document.getElementById('search-results').innerHTML='';
+  document.getElementById('f-cover-url').value = it.cover || '';
   if(it.cover){
     document.getElementById('cover-img').src = it.cover;
-    document.getElementById('cover-title').textContent = it.titulo;
+    document.getElementById('cover-title').textContent = 'Vista previa';
     document.getElementById('cover-preview').style.display='flex';
   } else {
     document.getElementById('cover-preview').style.display='none';
