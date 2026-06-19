@@ -516,26 +516,44 @@ async function doSearch(q){
   const endpoint = type==='anime' ? 'anime' : 'manga';
   const resultsEl = document.getElementById('search-results');
   try{
-    const res = await fetch(`https://api.jikan.moe/v4/${endpoint}?q=${encodeURIComponent(q)}&limit=6`);
+    const url = `https://api.jikan.moe/v4/${endpoint}?q=${encodeURIComponent(q)}&limit=6&sfw`;
+    const res = await fetch(url);
+    if(!res.ok){
+      if(res.status === 429){
+        resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Demasiadas búsquedas, espera 2 segundos y vuelve a escribir</div>`;
+        return;
+      }
+      throw new Error('HTTP '+res.status);
+    }
     const data = await res.json();
     const items = data.data || [];
-    if(!items.length){ resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Sin resultados, puedes escribir el título manualmente abajo</div>`; return; }
-    resultsEl.innerHTML = items.map(it=>{
+    if(!items.length){ resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Sin resultados para "${esc(q)}", puedes escribir el título manualmente abajo</div>`; return; }
+    resultsEl.innerHTML = items.map((it,idx)=>{
       const img = it.images?.jpg?.image_url || '';
       const title = it.title || it.title_english || '';
       const meta = type==='anime' ? `${it.episodes||'?'} episodios` : `${it.chapters||'?'} capítulos`;
-      return `<div class="search-result-item" onclick='selectSearchResult(${JSON.stringify(JSON.stringify({title, img, total: it.episodes||it.chapters||null})).slice(1,-1)})'>
-        <img src="${img}" alt="">
+      return `<div class="search-result-item" data-idx="${idx}">
+        <img src="${img}" alt="" onerror="this.style.display='none'">
         <div><div class="sr-title">${esc(title)}</div><div class="sr-meta">${meta}</div></div>
       </div>`;
     }).join('');
+    window._searchCache = items;
+    resultsEl.querySelectorAll('.search-result-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const it = window._searchCache[parseInt(el.dataset.idx)];
+        selectSearchResult({
+          title: it.title || it.title_english || '',
+          img: it.images?.jpg?.image_url || '',
+          total: it.episodes || it.chapters || null
+        });
+      });
+    });
   }catch(e){
-    resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">Error de búsqueda, escribe el título manualmente</div>`;
+    resultsEl.innerHTML = `<div style="padding:8px;color:var(--text3);font-size:12px">No se pudo conectar con la base de datos (${esc(e.message)}). Escribe el título manualmente abajo.</div>`;
   }
 }
 
-window.selectSearchResult = (jsonStr) => {
-  const data = JSON.parse(jsonStr);
+window.selectSearchResult = (data) => {
   selectedCover = data.img;
   document.getElementById('f-titulo').value = data.title;
   if(data.total) document.getElementById('f-total').value = data.total;
