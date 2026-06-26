@@ -49,7 +49,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab-btn.active.t-deporte{border-color:var(--c-deporte);color:var(--c-deporte-t)}
 
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
-.filter-row{display:flex;gap:6px;flex-wrap:wrap}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .filter-chip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:5px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-family:inherit;transition:all .15s}
 .filter-chip:hover{border-color:var(--border2)}
 .filter-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
@@ -58,6 +58,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-primary.b-anime{background:var(--c-anime)}
 .btn-primary.b-manga{background:var(--c-manga)}
 .btn-primary.b-deporte{background:var(--c-deporte)}
+.btn-secondary{border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;background:var(--bg3);color:var(--text2);transition:all .15s}
+.btn-secondary:hover{background:var(--border);color:var(--text)}
+
+.search-box{position:relative;flex:1;max-width:260px;min-width:160px}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px 7px 32px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--border2)}
+.search-box i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px}
+.search-box .clear-search{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;display:none}
+.search-box.has-text .clear-search{display:block}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .15s;position:relative;display:flex;flex-direction:column}
@@ -82,6 +91,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .step-row{display:flex;align-items:center;gap:4px}
 .step-btn{width:20px;height:20px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1}
 .step-btn:hover{background:var(--border);color:var(--text)}
+
+/* Breadcrumbs para navegacion deportes */
+.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:16px;font-size:13px;flex-wrap:wrap}
+.breadcrumb-item{color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px}
+.breadcrumb-item:hover{color:var(--text2)}
+.breadcrumb-item.current{color:var(--text);font-weight:600;cursor:default}
+.breadcrumb-sep{color:var(--text3);font-size:11px}
+
+/* Tarjetas de carpeta deporte/torneo */
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.folder-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:all .15s;position:relative;display:flex;flex-direction:column;gap:8px}
+.folder-card:hover{border-color:var(--c-deporte);transform:translateY(-1px)}
+.folder-icon{width:40px;height:40px;border-radius:10px;background:var(--c-deporte-bg);color:var(--c-deporte-t);display:flex;align-items:center;justify-content:center;font-size:20px}
+.folder-name{font-size:14px;font-weight:600;color:var(--text)}
+.folder-meta{font-size:12px;color:var(--text3)}
+.folder-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.folder-card:hover .folder-actions{opacity:1}
 
 .deporte-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:border-color .15s;position:relative}
 .deporte-card:hover{border-color:var(--border2)}
@@ -108,12 +134,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .form-group select option{background:var(--bg2)}
 .form-row{display:flex;gap:8px}
 .form-row .form-group{flex:1}
-.search-results{max-height:220px;overflow-y:auto;margin-top:6px;display:flex;flex-direction:column;gap:4px}
-.search-result-item{display:flex;align-items:center;gap:10px;padding:6px;border-radius:var(--radius);cursor:pointer;border:1px solid var(--border)}
-.search-result-item:hover{background:var(--bg3)}
-.search-result-item img{width:36px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--bg3)}
-.search-result-item .sr-title{font-size:12px;color:var(--text)}
-.search-result-item .sr-meta{font-size:11px;color:var(--text3)}
 .cover-preview{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .cover-preview img{width:50px;height:70px;object-fit:cover;border-radius:6px;background:var(--bg3)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
@@ -124,6 +144,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .stars-input{display:flex;gap:4px;font-size:20px;cursor:pointer}
 .stars-input i{color:var(--border2)}
 .stars-input i.filled{color:#fcd34d}
+.empty-hint{font-size:12px;color:var(--text3);text-align:center;padding:30px 0}
 
 .toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--text);z-index:300;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -131,11 +152,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-anime);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading p{color:var(--text3);font-size:13px}
-.spinner-sm{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
 
 @media(max-width:600px){
   .app{padding:14px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .folder-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 </style>
 </head>
@@ -179,25 +200,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h2 id="modal-title">Añadir anime</h2>
-
     <div class="cover-preview" id="cover-preview" style="display:none">
       <img id="cover-img" src="" alt="">
       <div>
-        <div style="font-size:13px;font-weight:600;color:var(--text)" id="cover-title"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)" id="cover-title">Vista previa</div>
         <button class="btn-cancel" style="margin-top:4px;padding:3px 8px;font-size:11px" onclick="clearCover()">Quitar portada</button>
       </div>
     </div>
-
     <div class="form-group">
       <label>Título</label>
       <input type="text" id="f-titulo" placeholder="Nombre del anime/manga">
     </div>
-
     <div class="form-group">
       <label>URL de la portada (opcional)</label>
       <input type="text" id="f-cover-url" placeholder="Pega aquí el enlace de una imagen..." oninput="onCoverUrlInput()">
     </div>
-
     <div class="form-row">
       <div class="form-group">
         <label>Estado</label>
@@ -216,17 +233,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         </div>
       </div>
     </div>
-
     <div class="form-group">
       <label>Valoración</label>
       <div class="stars-input" id="stars-input"></div>
     </div>
-
     <div class="form-group">
       <label>Notas (opcional)</label>
       <textarea id="f-notas" placeholder="Tus impresiones..."></textarea>
     </div>
-
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-save" id="btn-save" onclick="saveTitulo()">Guardar</button>
@@ -234,27 +248,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
-<!-- Modal deporte -->
+<!-- Modal nuevo deporte -->
+<div class="modal-bg" id="sport-modal-bg" onclick="if(event.target===this)closeSportModal()">
+  <div class="modal">
+    <h2 id="sport-modal-title">Nuevo deporte</h2>
+    <div class="form-group">
+      <label>Nombre del deporte</label>
+      <input type="text" id="s-nombre" placeholder="Ej: Fútbol, Tenis, MMA...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSportModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveSport()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nuevo torneo -->
+<div class="modal-bg" id="torneo-modal-bg" onclick="if(event.target===this)closeTorneoModal()">
+  <div class="modal">
+    <h2 id="torneo-modal-title">Nuevo torneo</h2>
+    <div class="form-group">
+      <label>Nombre del torneo / liga / competición</label>
+      <input type="text" id="t-nombre" placeholder="Ej: La Liga, Roland Garros, UFC 305...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTorneoModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveTorneo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal partido -->
 <div class="modal-bg" id="deporte-modal-bg" onclick="if(event.target===this)closeDeporteModal()">
   <div class="modal">
-    <h2>Añadir evento deportivo</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Deporte</label>
-        <select id="d-deporte">
-          <option>Fútbol</option>
-          <option>Tenis</option>
-          <option>Baloncesto</option>
-          <option>F1</option>
-          <option>MMA / UFC</option>
-          <option>Boxeo</option>
-          <option>Otro</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Fecha</label>
-        <input type="date" id="d-fecha">
-      </div>
+    <h2>Añadir partido / evento</h2>
+    <div class="form-group">
+      <label>Fecha</label>
+      <input type="date" id="d-fecha">
     </div>
     <div class="form-group">
       <label>Equipo / Jugador 1</label>
@@ -263,10 +293,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="form-group">
       <label>Equipo / Jugador 2</label>
       <input type="text" id="d-p2" placeholder="Ej: Barcelona / Djokovic">
-    </div>
-    <div class="form-group">
-      <label>Torneo / Liga / Competición</label>
-      <input type="text" id="d-torneo" placeholder="Ej: La Liga, Roland Garros, UFC 305...">
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -297,7 +323,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
@@ -315,10 +341,13 @@ const db = getFirestore(app);
 let currentUser = null;
 let activeTab = 'anime';
 let activeFilter = 'todos';
-let animeList = [], mangaList = [], deporteList = [];
-let unsubAnime=null, unsubManga=null, unsubDeporte=null;
+let searchQuery = { anime:'', manga:'', deporte:'' };
+let animeList = [], mangaList = [], deporteList = [], sportsList = [], torneosList = [];
+let unsubAnime=null, unsubManga=null, unsubDeporte=null, unsubSports=null, unsubTorneos=null;
 let editId = null, currentRating = 0, selectedCover = null;
-let searchDebounce = null;
+
+// Navegacion deportes: null = vista deportes, sportId = vista torneos, {sportId,torneoId} = vista partidos
+let deporteNav = { sportId: null, torneoId: null };
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){
@@ -332,9 +361,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  if(unsubAnime) unsubAnime();
-  if(unsubManga) unsubManga();
-  if(unsubDeporte) unsubDeporte();
+  [unsubAnime,unsubManga,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -350,7 +377,7 @@ onAuthStateChanged(auth, user => {
     switchTab('anime');
   } else {
     currentUser = null;
-    animeList=[]; mangaList=[]; deporteList=[];
+    animeList=[]; mangaList=[]; deporteList=[]; sportsList=[]; torneosList=[];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
@@ -360,9 +387,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  if(unsubAnime) unsubAnime();
-  if(unsubManga) unsubManga();
-  if(unsubDeporte) unsubDeporte();
+  [unsubAnime,unsubManga,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
   unsubAnime = onSnapshot(userCol('anime'), snap => {
     animeList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='anime') renderTab();
@@ -371,15 +396,26 @@ function subscribeData(){
     mangaList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='manga') renderTab();
   });
-  unsubDeporte = onSnapshot(userCol('deportes'), snap => {
+  unsubDeporte = onSnapshot(userCol('deportes_partidos'), snap => {
     deporteList = snap.docs.map(d=>({id:d.id,...d.data()}));
     deporteList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='deporte') renderTab();
+  });
+  unsubSports = onSnapshot(userCol('deportes_sports'), snap => {
+    sportsList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    sportsList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+    if(activeTab==='deporte') renderTab();
+  });
+  unsubTorneos = onSnapshot(userCol('deportes_torneos'), snap => {
+    torneosList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    torneosList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
     if(activeTab==='deporte') renderTab();
   });
 }
 
 window.switchTab = (tab) => {
   activeTab = tab; activeFilter = 'todos';
+  if(tab === 'deporte') deporteNav = { sportId:null, torneoId:null };
   ['anime','manga','deporte'].forEach(t=>{
     document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab);
   });
@@ -395,10 +431,13 @@ function renderTab(){
   }
 }
 
+// ================== ANIME / MANGA ==================
 function renderListTab(content, type){
   const list = type==='anime' ? animeList : mangaList;
   const colorClass = type==='anime' ? 'anime' : 'manga';
-  const filtered = activeFilter==='todos' ? list : list.filter(it=>it.estado===activeFilter);
+  const q = searchQuery[type].toLowerCase().trim();
+  let filtered = activeFilter==='todos' ? list : list.filter(it=>it.estado===activeFilter);
+  if(q) filtered = filtered.filter(it=>it.titulo.toLowerCase().includes(q));
 
   const counts = {
     todos: list.length,
@@ -410,6 +449,11 @@ function renderListTab(content, type){
   content.innerHTML = `
     <div class="toolbar">
       <div class="filter-row">
+        <div class="search-box" id="search-box-${type}">
+          <i class="ti ti-search"></i>
+          <input type="text" id="search-input-${type}" placeholder="Buscar en ${type==='anime'?'anime':'manga'}..." value="${esc(searchQuery[type])}" oninput="onSearchType('${type}', this.value)">
+          <button class="clear-search" onclick="clearSearchType('${type}')"><i class="ti ti-x"></i></button>
+        </div>
         <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
         <button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${type==='anime'?'Viendo':'Leyendo'} (${counts.viendo})</button>
         <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendiente (${counts.pendiente})</button>
@@ -419,10 +463,11 @@ function renderListTab(content, type){
     </div>
     <div class="grid" id="items-grid"></div>
   `;
+  if(q) document.getElementById('search-box-'+type).classList.add('has-text');
 
   const grid = document.getElementById('items-grid');
   if(!filtered.length){
-    grid.outerHTML = `<div class="empty-state"><i class="ti ti-${type==='anime'?'eye-off':'book-off'}"></i>Nada por aquí todavía<br><small style="margin-top:6px;display:block">Pulsa "Añadir" para empezar tu lista</small></div>`;
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-${type==='anime'?'eye-off':'book-off'}"></i>${q?'Sin resultados para "'+esc(q)+'"':'Nada por aquí todavía'}<br><small style="margin-top:6px;display:block">${q?'Prueba otra búsqueda':'Pulsa "Añadir" para empezar tu lista'}</small></div>`;
     return;
   }
 
@@ -448,75 +493,38 @@ function renderListTab(content, type){
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <span class="progress-text">${it.actual||0}${it.total?'/'+it.total:''}</span>
         </div>
-        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir nuevo episodio/capítulo a la serie">+1 al total (nuevo cap.)</button>` : ''}
+        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir nuevo episodio/capítulo">+1 al total (nuevo cap.)</button>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
-function renderDeporteTab(content){
-  const filtered = activeFilter==='todos' ? deporteList : deporteList.filter(d=>d.estado===activeFilter);
-  const counts = {
-    todos: deporteList.length,
-    pendiente: deporteList.filter(d=>d.estado==='pendiente').length,
-    terminado: deporteList.filter(d=>d.estado==='terminado').length
-  };
-  content.innerHTML = `
-    <div class="toolbar">
-      <div class="filter-row">
-        <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
-        <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendientes (${counts.pendiente})</button>
-        <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Vistos (${counts.terminado})</button>
-      </div>
-      <button class="btn-primary b-deporte" onclick="openDeporteModal()"><i class="ti ti-plus"></i> Añadir evento</button>
-    </div>
-    <div id="deportes-list"></div>
-  `;
-  const list = document.getElementById('deportes-list');
-  if(!filtered.length){
-    list.innerHTML = `<div class="empty-state"><i class="ti ti-ball-football"></i>Sin eventos deportivos<br><small style="margin-top:6px;display:block">Añade un partido, combate o torneo</small></div>`;
-    return;
-  }
-  list.innerHTML = filtered.map(d=>{
-    const [y,m,dd] = (d.fecha||'').split('-');
-    const fechaFmt = y ? `${dd}/${m}/${y}` : '';
-    return `
-    <div class="deporte-card">
-      <div class="deporte-actions">
-        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="editDeporte('${d.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
-        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="deleteDeporte('${d.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-      </div>
-      <div class="deporte-top">
-        <span class="deporte-sport">${esc(d.deporte)}</span>
-        <span class="deporte-fecha">${fechaFmt}</span>
-      </div>
-      <div class="deporte-versus">${esc(d.p1)} ${d.p2?'vs '+esc(d.p2):''}</div>
-      ${d.torneo?`<div class="deporte-torneo"><i class="ti ti-trophy" style="font-size:12px"></i> ${esc(d.torneo)}</div>`:''}
-      ${d.resultado?`<div class="deporte-resultado">Resultado: ${esc(d.resultado)}</div>`:''}
-      <span class="card-status status-${d.estado}" style="margin-top:8px">${d.estado==='terminado'?'Visto':'Pendiente'}</span>
-    </div>`;
-  }).join('');
-}
+window.onSearchType = (type, val) => {
+  searchQuery[type] = val;
+  document.getElementById('search-box-'+type)?.classList.toggle('has-text', !!val);
+  renderTab();
+  setTimeout(()=>{
+    const inp = document.getElementById('search-input-'+type);
+    if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); }
+  },0);
+};
+window.clearSearchType = (type) => { searchQuery[type]=''; renderTab(); };
 
 window.setFilter = (f) => { activeFilter = f; renderTab(); };
 
-// ----- Jikan API search (anime/manga) -----
 window.onCoverUrlInput = () => {
   const url = document.getElementById('f-cover-url').value.trim();
   if(!url){ document.getElementById('cover-preview').style.display='none'; selectedCover=null; return; }
   selectedCover = url;
   document.getElementById('cover-img').src = url;
-  document.getElementById('cover-title').textContent = 'Vista previa';
   document.getElementById('cover-preview').style.display = 'flex';
 };
-
 window.clearCover = () => {
   selectedCover = null;
   document.getElementById('f-cover-url').value = '';
   document.getElementById('cover-preview').style.display = 'none';
 };
 
-// ----- Modal anime/manga -----
 let currentModalType = 'anime';
 window.openModal = (type) => {
   currentModalType = type; editId = null; selectedCover = null; currentRating = 0;
@@ -550,7 +558,6 @@ window.editTitulo = (type, id) => {
   document.getElementById('f-cover-url').value = it.cover || '';
   if(it.cover){
     document.getElementById('cover-img').src = it.cover;
-    document.getElementById('cover-title').textContent = 'Vista previa';
     document.getElementById('cover-preview').style.display='flex';
   } else {
     document.getElementById('cover-preview').style.display='none';
@@ -614,64 +621,290 @@ window.incrementTotal = async (type, id) => {
   showToast('Nuevo episodio/capítulo añadido ✓');
 };
 
-// ----- Modal deporte -----
+// ================== DEPORTES (3 niveles: deporte -> torneo -> partidos) ==================
+function renderDeporteTab(content){
+  if(!deporteNav.sportId){
+    renderSportsLevel(content);
+  } else if(!deporteNav.torneoId){
+    renderTorneosLevel(content);
+  } else {
+    renderPartidosLevel(content);
+  }
+}
+
+function renderSportsLevel(content){
+  const q = searchQuery.deporte.toLowerCase().trim();
+  let filtered = sportsList;
+  if(q) filtered = filtered.filter(s=>s.nombre.toLowerCase().includes(q));
+
+  content.innerHTML = `
+    <div class="toolbar">
+      <div class="filter-row">
+        <div class="search-box" id="search-box-deporte">
+          <i class="ti ti-search"></i>
+          <input type="text" id="search-input-deporte" placeholder="Buscar deporte..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
+          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+      <button class="btn-primary b-deporte" onclick="openSportModal()"><i class="ti ti-plus"></i> Nuevo deporte</button>
+    </div>
+    <div class="folder-grid" id="sports-grid"></div>
+  `;
+  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
+
+  const grid = document.getElementById('sports-grid');
+  if(!filtered.length){
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-ball-football"></i>${q?'Sin resultados':'Sin deportes todavía'}<br><small style="margin-top:6px;display:block">${q?'':'Crea un deporte (ej: Fútbol, Tenis) para empezar'}</small></div>`;
+    return;
+  }
+  const sportIcons = {futbol:'ball-football',tenis:'tennis-ball',baloncesto:'basketball',f1:'steering-wheel',mma:'karate',boxeo:'boxing-glove'};
+  grid.innerHTML = filtered.map(s=>{
+    const nTorneos = torneosList.filter(t=>t.sportId===s.id).length;
+    const partidoIds = torneosList.filter(t=>t.sportId===s.id).map(t=>t.id);
+    const nPartidos = deporteList.filter(p=>partidoIds.includes(p.torneoId)).length;
+    const key = s.nombre.toLowerCase().replace(/\s/g,'');
+    const icon = sportIcons[key] || 'ball-football';
+    return `
+    <div class="folder-card" onclick="openSport('${s.id}')">
+      <div class="folder-actions">
+        <button class="card-act-btn" onclick="event.stopPropagation();editSport('${s.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" onclick="event.stopPropagation();deleteSport('${s.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+      <div class="folder-icon"><i class="ti ti-${icon}"></i></div>
+      <div class="folder-name">${esc(s.nombre)}</div>
+      <div class="folder-meta">${nTorneos} torneo${nTorneos!==1?'s':''} · ${nPartidos} partido${nPartidos!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTorneosLevel(content){
+  const sport = sportsList.find(s=>s.id===deporteNav.sportId);
+  if(!sport){ deporteNav.sportId=null; renderTab(); return; }
+  const q = searchQuery.deporte.toLowerCase().trim();
+  let filtered = torneosList.filter(t=>t.sportId===deporteNav.sportId);
+  if(q) filtered = filtered.filter(t=>t.nombre.toLowerCase().includes(q));
+
+  content.innerHTML = `
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" onclick="backToSports()"><i class="ti ti-ball-football"></i> Deportes</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item current">${esc(sport.nombre)}</span>
+    </div>
+    <div class="toolbar">
+      <div class="filter-row">
+        <div class="search-box" id="search-box-deporte">
+          <i class="ti ti-search"></i>
+          <input type="text" id="search-input-deporte" placeholder="Buscar torneo..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
+          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+      <button class="btn-primary b-deporte" onclick="openTorneoModal()"><i class="ti ti-plus"></i> Nuevo torneo</button>
+    </div>
+    <div class="folder-grid" id="torneos-grid"></div>
+  `;
+  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
+
+  const grid = document.getElementById('torneos-grid');
+  if(!filtered.length){
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-trophy"></i>${q?'Sin resultados':'Sin torneos en '+esc(sport.nombre)}<br><small style="margin-top:6px;display:block">${q?'':'Crea un torneo para empezar a añadir partidos'}</small></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(t=>{
+    const nPartidos = deporteList.filter(p=>p.torneoId===t.id).length;
+    return `
+    <div class="folder-card" onclick="openTorneo('${t.id}')">
+      <div class="folder-actions">
+        <button class="card-act-btn" onclick="event.stopPropagation();editTorneo('${t.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" onclick="event.stopPropagation();deleteTorneo('${t.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+      <div class="folder-icon"><i class="ti ti-trophy"></i></div>
+      <div class="folder-name">${esc(t.nombre)}</div>
+      <div class="folder-meta">${nPartidos} partido${nPartidos!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPartidosLevel(content){
+  const sport = sportsList.find(s=>s.id===deporteNav.sportId);
+  const torneo = torneosList.find(t=>t.id===deporteNav.torneoId);
+  if(!sport || !torneo){ deporteNav={sportId:null,torneoId:null}; renderTab(); return; }
+  let filtered = deporteList.filter(p=>p.torneoId===deporteNav.torneoId);
+  filtered = activeFilter==='todos' ? filtered : filtered.filter(p=>p.estado===activeFilter);
+  const q = searchQuery.deporte.toLowerCase().trim();
+  if(q) filtered = filtered.filter(p=>p.p1.toLowerCase().includes(q) || (p.p2||'').toLowerCase().includes(q));
+
+  const all = deporteList.filter(p=>p.torneoId===deporteNav.torneoId);
+  const counts = { todos: all.length, pendiente: all.filter(p=>p.estado==='pendiente').length, terminado: all.filter(p=>p.estado==='terminado').length };
+
+  content.innerHTML = `
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" onclick="backToSports()"><i class="ti ti-ball-football"></i> Deportes</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item" onclick="backToTorneos()">${esc(sport.nombre)}</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item current">${esc(torneo.nombre)}</span>
+    </div>
+    <div class="toolbar">
+      <div class="filter-row">
+        <div class="search-box" id="search-box-deporte">
+          <i class="ti ti-search"></i>
+          <input type="text" id="search-input-deporte" placeholder="Buscar jugador/equipo..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
+          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
+        </div>
+        <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
+        <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendientes (${counts.pendiente})</button>
+        <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Vistos (${counts.terminado})</button>
+      </div>
+      <button class="btn-primary b-deporte" onclick="openDeporteModal()"><i class="ti ti-plus"></i> Añadir partido</button>
+    </div>
+    <div id="deportes-list"></div>
+  `;
+  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
+
+  const list = document.getElementById('deportes-list');
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-ball-football"></i>${q?'Sin resultados':'Sin partidos en este torneo'}<br><small style="margin-top:6px;display:block">${q?'':'Añade el primer partido o evento'}</small></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(d=>{
+    const [y,m,dd] = (d.fecha||'').split('-');
+    const fechaFmt = y ? `${dd}/${m}/${y}` : '';
+    return `
+    <div class="deporte-card">
+      <div class="deporte-actions">
+        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="editDeporte('${d.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="deleteDeporte('${d.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+      <div class="deporte-top">
+        <span class="deporte-sport">${esc(sport.nombre)}</span>
+        <span class="deporte-fecha">${fechaFmt}</span>
+      </div>
+      <div class="deporte-versus">${esc(d.p1)} ${d.p2?'vs '+esc(d.p2):''}</div>
+      ${d.resultado?`<div class="deporte-resultado">Resultado: ${esc(d.resultado)}</div>`:''}
+      ${d.notas?`<div class="deporte-torneo">${esc(d.notas)}</div>`:''}
+      <span class="card-status status-${d.estado}" style="margin-top:8px">${d.estado==='terminado'?'Visto':'Pendiente'}</span>
+    </div>`;
+  }).join('');
+}
+
+window.backToSports = () => { deporteNav={sportId:null,torneoId:null}; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
+window.backToTorneos = () => { deporteNav.torneoId=null; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
+window.openSport = (id) => { deporteNav.sportId=id; deporteNav.torneoId=null; searchQuery.deporte=''; renderTab(); };
+window.openTorneo = (id) => { deporteNav.torneoId=id; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
+
+// --- Modal deporte (carpeta) ---
+window.openSportModal = () => {
+  editId = null;
+  document.getElementById('sport-modal-title').textContent = 'Nuevo deporte';
+  document.getElementById('s-nombre').value = '';
+  document.getElementById('sport-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('s-nombre').focus(),60);
+};
+window.closeSportModal = () => document.getElementById('sport-modal-bg').classList.remove('open');
+window.editSport = (id) => {
+  const s = sportsList.find(x=>x.id===id); if(!s) return;
+  editId = id;
+  document.getElementById('sport-modal-title').textContent = 'Editar deporte';
+  document.getElementById('s-nombre').value = s.nombre;
+  document.getElementById('sport-modal-bg').classList.add('open');
+};
+window.saveSport = async () => {
+  const nombre = document.getElementById('s-nombre').value.trim();
+  if(!nombre) return;
+  if(editId) await updateDoc(userDoc('deportes_sports', editId), {nombre});
+  else await addDoc(userCol('deportes_sports'), {nombre, createdAt:new Date().toISOString()});
+  closeSportModal();
+  showToast(editId?'Actualizado':'Deporte añadido ✓');
+};
+window.deleteSport = async (id) => {
+  const nT = torneosList.filter(t=>t.sportId===id).length;
+  if(nT>0){ showToast(`Primero elimina los ${nT} torneo(s) de este deporte`); return; }
+  if(!confirm('¿Eliminar este deporte?')) return;
+  await deleteDoc(userDoc('deportes_sports', id));
+  showToast('Eliminado');
+};
+
+// --- Modal torneo (carpeta) ---
+window.openTorneoModal = () => {
+  editId = null;
+  document.getElementById('torneo-modal-title').textContent = 'Nuevo torneo';
+  document.getElementById('t-nombre').value = '';
+  document.getElementById('torneo-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('t-nombre').focus(),60);
+};
+window.closeTorneoModal = () => document.getElementById('torneo-modal-bg').classList.remove('open');
+window.editTorneo = (id) => {
+  const t = torneosList.find(x=>x.id===id); if(!t) return;
+  editId = id;
+  document.getElementById('torneo-modal-title').textContent = 'Editar torneo';
+  document.getElementById('t-nombre').value = t.nombre;
+  document.getElementById('torneo-modal-bg').classList.add('open');
+};
+window.saveTorneo = async () => {
+  const nombre = document.getElementById('t-nombre').value.trim();
+  if(!nombre) return;
+  if(editId) await updateDoc(userDoc('deportes_torneos', editId), {nombre});
+  else await addDoc(userCol('deportes_torneos'), {nombre, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
+  closeTorneoModal();
+  showToast(editId?'Actualizado':'Torneo añadido ✓');
+};
+window.deleteTorneo = async (id) => {
+  const nP = deporteList.filter(p=>p.torneoId===id).length;
+  if(nP>0){ showToast(`Primero elimina los ${nP} partido(s) de este torneo`); return; }
+  if(!confirm('¿Eliminar este torneo?')) return;
+  await deleteDoc(userDoc('deportes_torneos', id));
+  showToast('Eliminado');
+};
+
+// --- Modal partido ---
 window.openDeporteModal = () => {
   editId = null;
-  document.getElementById('d-deporte').value = 'Fútbol';
   document.getElementById('d-fecha').value = new Date().toISOString().slice(0,10);
   document.getElementById('d-p1').value = '';
   document.getElementById('d-p2').value = '';
-  document.getElementById('d-torneo').value = '';
   document.getElementById('d-estado').value = 'pendiente';
   document.getElementById('d-resultado').value = '';
   document.getElementById('d-notas').value = '';
   document.getElementById('deporte-modal-bg').classList.add('open');
 };
 window.closeDeporteModal = () => document.getElementById('deporte-modal-bg').classList.remove('open');
-
 window.editDeporte = (id) => {
   const d = deporteList.find(x=>x.id===id);
   if(!d) return;
   editId = id;
-  document.getElementById('d-deporte').value = d.deporte;
   document.getElementById('d-fecha').value = d.fecha;
   document.getElementById('d-p1').value = d.p1;
   document.getElementById('d-p2').value = d.p2 || '';
-  document.getElementById('d-torneo').value = d.torneo || '';
   document.getElementById('d-estado').value = d.estado;
   document.getElementById('d-resultado').value = d.resultado || '';
   document.getElementById('d-notas').value = d.notas || '';
   document.getElementById('deporte-modal-bg').classList.add('open');
 };
-
 window.saveDeporte = async () => {
   const p1 = document.getElementById('d-p1').value.trim();
   if(!p1){ document.getElementById('d-p1').focus(); return; }
   const data = {
-    deporte: document.getElementById('d-deporte').value,
     fecha: document.getElementById('d-fecha').value,
     p1,
     p2: document.getElementById('d-p2').value.trim(),
-    torneo: document.getElementById('d-torneo').value.trim(),
     estado: document.getElementById('d-estado').value,
     resultado: document.getElementById('d-resultado').value.trim(),
     notas: document.getElementById('d-notas').value.trim(),
     updatedAt: new Date().toISOString()
   };
-  if(editId) await updateDoc(userDoc('deportes', editId), data);
-  else await addDoc(userCol('deportes'), {...data, createdAt: new Date().toISOString()});
+  if(editId) await updateDoc(userDoc('deportes_partidos', editId), data);
+  else await addDoc(userCol('deportes_partidos'), {...data, torneoId: deporteNav.torneoId, createdAt: new Date().toISOString()});
   closeDeporteModal();
   showToast(editId?'Actualizado':'Añadido ✓');
 };
-
 window.deleteDeporte = async (id) => {
-  if(!confirm('¿Eliminar este evento?')) return;
-  await deleteDoc(userDoc('deportes', id));
+  if(!confirm('¿Eliminar este partido?')) return;
+  await deleteDoc(userDoc('deportes_partidos', id));
   showToast('Eliminado');
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeDeporteModal(); }
+  if(e.key==='Escape'){ closeModal(); closeDeporteModal(); closeSportModal(); closeTorneoModal(); }
 });
 </script>
 </body>
