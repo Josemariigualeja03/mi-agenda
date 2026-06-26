@@ -271,6 +271,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <label>Nombre del torneo / liga / competición</label>
       <input type="text" id="t-nombre" placeholder="Ej: La Liga, Roland Garros, UFC 305...">
     </div>
+    <div class="form-group">
+      <label>Año / Temporada</label>
+      <input type="number" id="t-anio" placeholder="Ej: 2026" min="1900" max="2100">
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeTorneoModal()">Cancelar</button>
       <button class="btn-save" style="background:var(--c-deporte)" onclick="saveTorneo()">Guardar</button>
@@ -408,7 +412,10 @@ function subscribeData(){
   });
   unsubTorneos = onSnapshot(userCol('deportes_torneos'), snap => {
     torneosList = snap.docs.map(d=>({id:d.id,...d.data()}));
-    torneosList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+    torneosList.sort((a,b)=>{
+      if((b.anio||0) !== (a.anio||0)) return (b.anio||0)-(a.anio||0);
+      return a.nombre.localeCompare(b.nombre);
+    });
     if(activeTab==='deporte') renderTab();
   });
 }
@@ -682,7 +689,7 @@ function renderTorneosLevel(content){
   if(!sport){ deporteNav.sportId=null; renderTab(); return; }
   const q = searchQuery.deporte.toLowerCase().trim();
   let filtered = torneosList.filter(t=>t.sportId===deporteNav.sportId);
-  if(q) filtered = filtered.filter(t=>t.nombre.toLowerCase().includes(q));
+  if(q) filtered = filtered.filter(t=>t.nombre.toLowerCase().includes(q) || String(t.anio||'').includes(q));
 
   content.innerHTML = `
     <div class="breadcrumb">
@@ -718,7 +725,7 @@ function renderTorneosLevel(content){
         <button class="card-act-btn" onclick="event.stopPropagation();deleteTorneo('${t.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
       </div>
       <div class="folder-icon"><i class="ti ti-trophy"></i></div>
-      <div class="folder-name">${esc(t.nombre)}</div>
+      <div class="folder-name">${esc(t.nombre)}${t.anio?` <span style="color:var(--text3);font-weight:500">${t.anio}</span>`:''}</div>
       <div class="folder-meta">${nPartidos} partido${nPartidos!==1?'s':''}</div>
     </div>`;
   }).join('');
@@ -742,7 +749,7 @@ function renderPartidosLevel(content){
       <span class="breadcrumb-sep">/</span>
       <span class="breadcrumb-item" onclick="backToTorneos()">${esc(sport.nombre)}</span>
       <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item current">${esc(torneo.nombre)}</span>
+      <span class="breadcrumb-item current">${esc(torneo.nombre)}${torneo.anio?' '+torneo.anio:''}</span>
     </div>
     <div class="toolbar">
       <div class="filter-row">
@@ -829,6 +836,7 @@ window.openTorneoModal = () => {
   editId = null;
   document.getElementById('torneo-modal-title').textContent = 'Nuevo torneo';
   document.getElementById('t-nombre').value = '';
+  document.getElementById('t-anio').value = new Date().getFullYear();
   document.getElementById('torneo-modal-bg').classList.add('open');
   setTimeout(()=>document.getElementById('t-nombre').focus(),60);
 };
@@ -838,13 +846,15 @@ window.editTorneo = (id) => {
   editId = id;
   document.getElementById('torneo-modal-title').textContent = 'Editar torneo';
   document.getElementById('t-nombre').value = t.nombre;
+  document.getElementById('t-anio').value = t.anio || '';
   document.getElementById('torneo-modal-bg').classList.add('open');
 };
 window.saveTorneo = async () => {
   const nombre = document.getElementById('t-nombre').value.trim();
   if(!nombre) return;
-  if(editId) await updateDoc(userDoc('deportes_torneos', editId), {nombre});
-  else await addDoc(userCol('deportes_torneos'), {nombre, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
+  const anio = document.getElementById('t-anio').value ? parseInt(document.getElementById('t-anio').value) : null;
+  if(editId) await updateDoc(userDoc('deportes_torneos', editId), {nombre, anio});
+  else await addDoc(userCol('deportes_torneos'), {nombre, anio, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
   closeTorneoModal();
   showToast(editId?'Actualizado':'Torneo añadido ✓');
 };
