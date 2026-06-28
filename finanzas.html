@@ -125,6 +125,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .meta-add-row button{background:var(--c-meta);color:#fff;border:none;border-radius:var(--radius);padding:6px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
 .meta-completed-badge{font-size:11px;font-weight:700;color:var(--c-ingreso-t);background:var(--c-ingreso-bg);padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px;margin-bottom:8px}
 
+.subtabs{display:flex;gap:8px;margin-bottom:18px}
+.subtab-btn{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:7px 16px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:600;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:6px}
+.subtab-btn:hover{border-color:var(--border2)}
+.subtab-btn.active.debo{background:var(--c-gasto-bg);color:var(--c-gasto-t);border-color:var(--c-gasto)}
+.subtab-btn.active.me-deben{background:var(--c-ingreso-bg);color:var(--c-ingreso-t);border-color:var(--c-ingreso)}
+
+.deuda-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);margin-bottom:6px;transition:border-color .15s}
+.deuda-card:hover{border-color:var(--border2)}
+.deuda-body{flex:1;min-width:0}
+.deuda-persona{font-size:13px;font-weight:600;color:var(--text)}
+.deuda-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.deuda-amount{font-size:15px;font-weight:700;flex-shrink:0}
+.deuda-amount.debo{color:var(--c-gasto-t)}
+.deuda-amount.me-deben{color:var(--c-ingreso-t)}
+.deuda-actions{display:flex;gap:3px;flex-shrink:0}
+.deuda-status-toggle{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;cursor:pointer;border:none;font-family:inherit;text-transform:uppercase;letter-spacing:.03em}
+.deuda-status-toggle.pendiente{background:rgba(154,160,184,.15);color:var(--text2)}
+.deuda-status-toggle.pagada{background:var(--c-ingreso-bg);color:var(--c-ingreso-t)}
+
 .empty-state{text-align:center;color:var(--text3);padding:50px 0;font-size:13px}
 .empty-state i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
 
@@ -208,6 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="tabs">
     <button class="tab-btn" onclick="switchTab('cuentas')" id="tabbtn-cuentas"><i class="ti ti-building-bank"></i> Cuentas</button>
     <button class="tab-btn" onclick="switchTab('metas')" id="tabbtn-metas"><i class="ti ti-target-arrow"></i> Metas de ahorro</button>
+    <button class="tab-btn" onclick="switchTab('deudas')" id="tabbtn-deudas"><i class="ti ti-receipt-2"></i> Deudas</button>
   </div>
 
   <div id="tab-content"></div>
@@ -295,6 +315,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- Modal deuda -->
+<div class="modal-bg" id="deuda-modal-bg" onclick="if(event.target===this)closeDeudaModal()">
+  <div class="modal">
+    <h2 id="deuda-modal-title">Nueva deuda</h2>
+    <div class="form-group">
+      <label>Persona</label>
+      <input type="text" id="d-persona" placeholder="Nombre de la persona">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cantidad (€)</label>
+        <input type="number" step="0.01" id="d-cantidad" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="d-fecha">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Concepto (opcional)</label>
+      <input type="text" id="d-concepto" placeholder="Ej: Cena, préstamo, entrada concierto...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeudaModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveDeuda()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -322,10 +371,12 @@ let currentUser = null;
 let activeTab = 'cuentas';
 let activeFilter = 'todos';
 let searchMov = '';
-let accountsList = [], movsList = [], metasList = [];
-let unsubAcc=null, unsubMov=null, unsubMeta=null;
+let accountsList = [], movsList = [], metasList = [], deudasList = [];
+let unsubAcc=null, unsubMov=null, unsubMeta=null, unsubDeudas=null;
 let editId = null, currentMovType = 'gasto';
 let navAccountId = null;
+let deudaTipoActivo = 'debo';
+let editDeudaId = null;
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtMoney(n){ return (n||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
@@ -340,7 +391,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubAcc,unsubMov,unsubMeta].forEach(u=>u&&u());
+  [unsubAcc,unsubMov,unsubMeta,unsubDeudas].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -356,7 +407,7 @@ onAuthStateChanged(auth, user => {
     switchTab('cuentas');
   } else {
     currentUser = null;
-    accountsList=[]; movsList=[]; metasList=[];
+    accountsList=[]; movsList=[]; metasList=[]; deudasList=[];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
@@ -366,7 +417,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubAcc,unsubMov,unsubMeta].forEach(u=>u&&u());
+  [unsubAcc,unsubMov,unsubMeta,unsubDeudas].forEach(u=>u&&u());
   unsubAcc = onSnapshot(userCol('fin_cuentas'), snap => {
     accountsList = snap.docs.map(d=>({id:d.id,...d.data()}));
     accountsList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
@@ -381,6 +432,11 @@ function subscribeData(){
     metasList = snap.docs.map(d=>({id:d.id,...d.data()}));
     metasList.sort((a,b)=>(a.completado?1:0)-(b.completado?1:0));
     if(activeTab==='metas') renderTab();
+  });
+  unsubDeudas = onSnapshot(userCol('fin_deudas'), snap => {
+    deudasList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    deudasList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='deudas') renderTab();
   });
 }
 
@@ -407,7 +463,7 @@ function renderSummary(){
 
 window.switchTab = (tab) => {
   activeTab = tab; activeFilter='todos'; searchMov=''; navAccountId=null;
-  ['cuentas','metas'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
+  ['cuentas','metas','deudas'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
   renderTab();
 };
 
@@ -416,8 +472,10 @@ function renderTab(){
   if(activeTab === 'cuentas'){
     if(!navAccountId) renderAccountsLevel(content);
     else renderMovsLevel(content);
-  } else {
+  } else if(activeTab === 'metas'){
     renderMetasLevel(content);
+  } else {
+    renderDeudasLevel(content);
   }
 }
 
@@ -703,8 +761,116 @@ window.addToMeta = async (id) => {
   showToast(nuevoActual>=g.objetivo ? '¡Meta completada! 🎉' : 'Añadido a la meta ✓');
 };
 
+// ================== DEUDAS ==================
+window.setDeudaTipo = (tipo) => {
+  deudaTipoActivo = tipo;
+  renderTab();
+};
+
+function renderDeudasLevel(content){
+  const debo = deudasList.filter(d=>d.tipo==='debo');
+  const meDeben = deudasList.filter(d=>d.tipo==='me-deben');
+  const totalDebo = debo.filter(d=>d.estado==='pendiente').reduce((s,d)=>s+d.cantidad,0);
+  const totalMeDeben = meDeben.filter(d=>d.estado==='pendiente').reduce((s,d)=>s+d.cantidad,0);
+
+  content.innerHTML = `
+    <div class="summary-grid" style="margin-bottom:18px">
+      <div class="summary-card">
+        <div class="summary-label">Total que debo</div>
+        <div class="summary-value negative">${fmtMoney(totalDebo)}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total que me deben</div>
+        <div class="summary-value positive">${fmtMoney(totalMeDeben)}</div>
+      </div>
+      <div class="summary-card"></div>
+    </div>
+    <div class="subtabs">
+      <button class="subtab-btn debo ${deudaTipoActivo==='debo'?'active':''}" onclick="setDeudaTipo('debo')"><i class="ti ti-arrow-up-circle"></i> Lo que debo (${debo.length})</button>
+      <button class="subtab-btn me-deben ${deudaTipoActivo==='me-deben'?'active':''}" onclick="setDeudaTipo('me-deben')"><i class="ti ti-arrow-down-circle"></i> Lo que me deben (${meDeben.length})</button>
+    </div>
+    <div class="toolbar">
+      <div></div>
+      <button class="btn-primary" onclick="openDeudaModal()"><i class="ti ti-plus"></i> Añadir deuda</button>
+    </div>
+    <div id="deudas-list"></div>
+  `;
+
+  const list = deudaTipoActivo === 'debo' ? debo : meDeben;
+  const listEl = document.getElementById('deudas-list');
+  if(!list.length){
+    listEl.innerHTML = `<div class="empty-state"><i class="ti ti-receipt-2"></i>Sin deudas registradas aquí<br><small style="margin-top:6px;display:block">Añade una deuda para empezar a llevar el control</small></div>`;
+    return;
+  }
+  const sorted = [...list].sort((a,b)=>(a.estado==='pagada'?1:0)-(b.estado==='pagada'?1:0));
+  listEl.innerHTML = sorted.map(d=>{
+    const [y,m,dd] = (d.fecha||'').split('-');
+    const fechaFmt = y ? `${dd}/${m}/${y}` : '';
+    return `
+    <div class="deuda-card">
+      <div class="deuda-body">
+        <div class="deuda-persona">${esc(d.persona)}</div>
+        <div class="deuda-meta">${d.concepto?esc(d.concepto)+' · ':''}${fechaFmt}</div>
+      </div>
+      <span class="deuda-amount ${d.tipo}">${fmtMoney(d.cantidad)}</span>
+      <button class="deuda-status-toggle ${d.estado}" onclick="toggleDeudaEstado('${d.id}','${d.estado}')">${d.estado==='pagada'?'Pagada':'Pendiente'}</button>
+      <div class="deuda-actions">
+        <button class="act-btn" onclick="editDeuda('${d.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="act-btn" onclick="deleteDeuda('${d.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openDeudaModal = () => {
+  editDeudaId = null;
+  document.getElementById('deuda-modal-title').textContent = deudaTipoActivo==='debo' ? 'Nueva deuda (debo)' : 'Nueva deuda (me deben)';
+  document.getElementById('d-persona').value = '';
+  document.getElementById('d-cantidad').value = '';
+  document.getElementById('d-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('d-concepto').value = '';
+  document.getElementById('deuda-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('d-persona').focus(),60);
+};
+window.closeDeudaModal = () => document.getElementById('deuda-modal-bg').classList.remove('open');
+window.editDeuda = (id) => {
+  const d = deudasList.find(x=>x.id===id); if(!d) return;
+  editDeudaId = id;
+  document.getElementById('deuda-modal-title').textContent = 'Editar deuda';
+  document.getElementById('d-persona').value = d.persona;
+  document.getElementById('d-cantidad').value = d.cantidad;
+  document.getElementById('d-fecha').value = d.fecha;
+  document.getElementById('d-concepto').value = d.concepto || '';
+  document.getElementById('deuda-modal-bg').classList.add('open');
+};
+window.saveDeuda = async () => {
+  const persona = document.getElementById('d-persona').value.trim();
+  const cantidad = parseFloat(document.getElementById('d-cantidad').value);
+  if(!persona || !cantidad || cantidad<=0){ document.getElementById('d-persona').focus(); return; }
+  const data = {
+    persona, cantidad,
+    fecha: document.getElementById('d-fecha').value,
+    concepto: document.getElementById('d-concepto').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  if(editDeudaId) await updateDoc(userDoc('fin_deudas', editDeudaId), data);
+  else await addDoc(userCol('fin_deudas'), {...data, tipo: deudaTipoActivo, estado: 'pendiente', createdAt: new Date().toISOString()});
+  closeDeudaModal();
+  showToast(editDeudaId?'Actualizada':'Deuda añadida ✓');
+};
+window.deleteDeuda = async (id) => {
+  if(!confirm('¿Eliminar esta deuda?')) return;
+  await deleteDoc(userDoc('fin_deudas', id));
+  showToast('Eliminada');
+};
+window.toggleDeudaEstado = async (id, estadoActual) => {
+  const nuevo = estadoActual === 'pendiente' ? 'pagada' : 'pendiente';
+  await updateDoc(userDoc('fin_deudas', id), {estado: nuevo});
+  showToast(nuevo==='pagada' ? 'Marcada como pagada ✓' : 'Marcada como pendiente');
+};
+
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeAccountModal(); closeMovModal(); closeMetaModal(); }
+  if(e.key==='Escape'){ closeAccountModal(); closeMovModal(); closeMetaModal(); closeDeudaModal(); }
 });
 </script>
 </body>
