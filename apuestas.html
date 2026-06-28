@@ -161,6 +161,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .breakdown-bar-fill{height:100%;background:var(--c-acc);border-radius:3px}
 .breakdown-value{font-weight:700;min-width:60px;text-align:right}
 
+.temporal-table{width:100%;font-size:13px;border-collapse:collapse}
+.temporal-table th{text-align:left;color:var(--text3);font-weight:600;padding:6px 10px;text-transform:uppercase;font-size:10px;letter-spacing:.03em;border-bottom:1px solid var(--border)}
+.temporal-table td{padding:8px 10px;color:var(--text)}
+.temporal-table tr:not(:last-child) td{border-bottom:1px solid var(--border)}
+.temporal-table .num{text-align:right;font-weight:600}
+
 @media(max-width:800px){
   .stats-grid{grid-template-columns:repeat(3,1fr)}
   .breakdown-grid{grid-template-columns:1fr}
@@ -208,6 +214,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 
+  <div class="toolbar" style="margin-bottom:10px">
+    <div class="filter-row">
+      <button class="filter-chip active" id="period-todo" onclick="setStatsPeriod('todo')">Todo</button>
+      <button class="filter-chip" id="period-mes" onclick="setStatsPeriod('mes')">Este mes</button>
+      <button class="filter-chip" id="period-semana" onclick="setStatsPeriod('semana')">Esta semana</button>
+    </div>
+  </div>
   <div class="stats-grid" id="stats-grid"></div>
 
   <div class="chart-card">
@@ -226,6 +239,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="chart-card-title">Por casa de apuestas</div>
       <div id="breakdown-casa"></div>
     </div>
+  </div>
+
+  <div class="breakdown-card" style="margin-bottom:20px">
+    <div class="toolbar" style="margin-bottom:10px">
+      <div class="chart-card-title" style="margin-bottom:0">Desglose temporal</div>
+      <div class="filter-row">
+        <button class="filter-chip active" id="temporal-semana" onclick="setTemporalGroup('semana')">Por semana</button>
+        <button class="filter-chip" id="temporal-mes" onclick="setTemporalGroup('mes')">Por mes</button>
+      </div>
+    </div>
+    <div id="temporal-table"></div>
   </div>
 
   <div class="tabs">
@@ -372,6 +396,8 @@ let activeFilter = 'todas';
 let searchQuery = '';
 let bankrollChart = null;
 let selRowCount = 0;
+let statsPeriod = 'todo';
+let temporalGroup = 'semana';
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtMoney(n){ return (n||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
@@ -447,11 +473,53 @@ function computeBetCashflow(bet){
   return 0;
 }
 
+function getISOWeekKey(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const target = new Date(d.valueOf());
+  const dayNr = (d.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0,1);
+  if(target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  const week = 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  const year = new Date(d.valueOf());
+  year.setDate(year.getDate() - dayNr + 3);
+  return `${year.getFullYear()}-S${String(week).padStart(2,'0')}`;
+}
+function getMonthKey(dateStr){
+  const [y,m] = dateStr.split('-');
+  return `${y}-${m}`;
+}
+function isInCurrentPeriod(fecha, period){
+  if(!fecha || period==='todo') return true;
+  const now = new Date();
+  const d = new Date(fecha + 'T00:00:00');
+  if(period === 'mes'){
+    return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }
+  if(period === 'semana'){
+    return getISOWeekKey(fecha) === getISOWeekKey(now.toISOString().slice(0,10));
+  }
+  return true;
+}
+
+window.setStatsPeriod = (p) => {
+  statsPeriod = p;
+  ['todo','mes','semana'].forEach(x=>document.getElementById('period-'+x).classList.toggle('active', x===p));
+  renderStats();
+};
+window.setTemporalGroup = (g) => {
+  temporalGroup = g;
+  ['semana','mes'].forEach(x=>document.getElementById('temporal-'+x).classList.toggle('active', x===g));
+  renderTemporalTable();
+};
+
 function renderAll(){
   renderBankroll();
   renderStats();
   renderChart();
   renderBreakdowns();
+  renderTemporalTable();
   renderBetsList();
 }
 
@@ -470,14 +538,15 @@ window.saveBankroll = async () => {
 };
 
 function renderStats(){
-  const resolved = betsList.filter(b=>b.estado==='ganada' || b.estado==='perdida');
+  const periodFiltered = betsList.filter(b => isInCurrentPeriod(b.fecha, statsPeriod));
+  const resolved = periodFiltered.filter(b=>b.estado==='ganada' || b.estado==='perdida');
   const totalStaked = resolved.reduce((s,b)=>s+b.stake,0);
   const totalReturn = resolved.reduce((s,b)=>s+computeBetReturn(b),0);
   const wins = resolved.filter(b=>b.estado==='ganada').length;
   const winRate = resolved.length ? Math.round((wins/resolved.length)*100) : 0;
   const roi = totalStaked ? (totalReturn/totalStaked*100) : 0;
   const yieldVal = resolved.length ? (totalReturn/resolved.length) : 0;
-  const pendientes = betsList.filter(b=>b.estado==='pendiente').length;
+  const pendientes = periodFiltered.filter(b=>b.estado==='pendiente').length;
 
   // racha actual
   const ordered = [...resolved].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
@@ -577,6 +646,55 @@ function renderBreakdowns(){
       <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${Math.abs(v.return)/maxAbsCasa*100}%;background:${v.return>=0?'var(--c-win)':'var(--c-lose)'}"></div></div>
       <span class="breakdown-value" style="color:${v.return>=0?'var(--c-win-t)':'var(--c-lose-t)'}">${fmtMoney(v.return)}</span>
     </div>`).join('') : `<div style="color:var(--text3);font-size:12px;padding:10px 0">Sin datos todavía</div>`;
+}
+
+function renderTemporalTable(){
+  const el = document.getElementById('temporal-table');
+  if(!el) return;
+  const resolved = betsList.filter(b=>(b.estado==='ganada' || b.estado==='perdida') && b.fecha);
+  if(!resolved.length){
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:10px 0">Sin apuestas resueltas todavía</div>`;
+    return;
+  }
+  const groups = {};
+  resolved.forEach(b=>{
+    const key = temporalGroup==='semana' ? getISOWeekKey(b.fecha) : getMonthKey(b.fecha);
+    if(!groups[key]) groups[key] = { bets:[], staked:0, ret:0, wins:0 };
+    groups[key].bets.push(b);
+    groups[key].staked += b.stake;
+    groups[key].ret += computeBetReturn(b);
+    if(b.estado==='ganada') groups[key].wins++;
+  });
+  const keys = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  const rows = keys.map(key=>{
+    const g = groups[key];
+    const roi = g.staked ? (g.ret/g.staked*100) : 0;
+    const winRate = g.bets.length ? Math.round((g.wins/g.bets.length)*100) : 0;
+    const label = temporalGroup==='semana' ? key.replace('-S',' · Semana ') : (() => {
+      const [y,m] = key.split('-');
+      const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      return `${meses[parseInt(m)-1]} ${y}`;
+    })();
+    return `
+    <tr>
+      <td>${label}</td>
+      <td class="num">${g.bets.length}</td>
+      <td class="num">${winRate}%</td>
+      <td class="num" style="color:${g.ret>=0?'var(--c-win-t)':'var(--c-lose-t)'}">${g.ret>=0?'+':''}${fmtMoney(g.ret)}</td>
+      <td class="num" style="color:${roi>=0?'var(--c-win-t)':'var(--c-lose-t)'}">${roi.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <table class="temporal-table">
+      <tr>
+        <th>${temporalGroup==='semana'?'Semana':'Mes'}</th>
+        <th style="text-align:right">Apuestas</th>
+        <th style="text-align:right">% Aciertos</th>
+        <th style="text-align:right">Ganancia</th>
+        <th style="text-align:right">ROI</th>
+      </tr>
+      ${rows}
+    </table>`;
 }
 
 // ============ LISTA DE APUESTAS ============
