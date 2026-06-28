@@ -14,6 +14,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   --text:#e8eaf0;--text2:#9aa0b8;--text3:#5a6080;
   --c-anime:#a78bfa;--c-anime-bg:rgba(167,139,250,.15);--c-anime-t:#c4b5fd;
   --c-manga:#f472b6;--c-manga-bg:rgba(244,114,182,.15);--c-manga-t:#f9a8d4;
+  --c-libro:#fb923c;--c-libro-bg:rgba(251,146,60,.15);--c-libro-t:#fdba74;
+  --c-pelicula:#facc15;--c-pelicula-bg:rgba(250,204,21,.15);--c-pelicula-t:#fde047;
+  --c-serie:#22d3ee;--c-serie-bg:rgba(34,211,238,.15);--c-serie-t:#67e8f9;
   --c-deporte:#22c55e;--c-deporte-bg:rgba(34,197,94,.15);--c-deporte-t:#86efac;
   --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
 }
@@ -46,6 +49,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab-btn.active{color:var(--text)}
 .tab-btn.active.t-anime{border-color:var(--c-anime);color:var(--c-anime-t)}
 .tab-btn.active.t-manga{border-color:var(--c-manga);color:var(--c-manga-t)}
+.tab-btn.active.t-libro{border-color:var(--c-libro);color:var(--c-libro-t)}
+.tab-btn.active.t-pelicula{border-color:var(--c-pelicula);color:var(--c-pelicula-t)}
+.tab-btn.active.t-serie{border-color:var(--c-serie);color:var(--c-serie-t)}
 .tab-btn.active.t-deporte{border-color:var(--c-deporte);color:var(--c-deporte-t)}
 
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
@@ -57,6 +63,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-primary:hover{opacity:.85}
 .btn-primary.b-anime{background:var(--c-anime)}
 .btn-primary.b-manga{background:var(--c-manga)}
+.btn-primary.b-libro{background:var(--c-libro)}
+.btn-primary.b-pelicula{background:var(--c-pelicula);color:#1a1a1a}
+.btn-primary.b-serie{background:var(--c-serie);color:#1a1a1a}
 .btn-primary.b-deporte{background:var(--c-deporte)}
 .btn-secondary{border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;background:var(--bg3);color:var(--text2);transition:all .15s}
 .btn-secondary:hover{background:var(--border);color:var(--text)}
@@ -189,6 +198,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="tabs">
     <button class="tab-btn t-anime" onclick="switchTab('anime')" id="tabbtn-anime"><i class="ti ti-eye"></i> Anime</button>
     <button class="tab-btn t-manga" onclick="switchTab('manga')" id="tabbtn-manga"><i class="ti ti-book"></i> Manga</button>
+    <button class="tab-btn t-libro" onclick="switchTab('libro')" id="tabbtn-libro"><i class="ti ti-book-2"></i> Libros</button>
+    <button class="tab-btn t-pelicula" onclick="switchTab('pelicula')" id="tabbtn-pelicula"><i class="ti ti-movie"></i> Películas</button>
+    <button class="tab-btn t-serie" onclick="switchTab('serie')" id="tabbtn-serie"><i class="ti ti-device-tv"></i> Series</button>
     <button class="tab-btn t-deporte" onclick="switchTab('deporte')" id="tabbtn-deporte"><i class="ti ti-ball-football"></i> Deportes</button>
   </div>
 
@@ -345,10 +357,34 @@ const db = getFirestore(app);
 let currentUser = null;
 let activeTab = 'anime';
 let activeFilter = 'todos';
-let searchQuery = { anime:'', manga:'', deporte:'' };
-let animeList = [], mangaList = [], deporteList = [], sportsList = [], torneosList = [];
-let unsubAnime=null, unsubManga=null, unsubDeporte=null, unsubSports=null, unsubTorneos=null;
+let searchQuery = { anime:'', manga:'', libro:'', pelicula:'', serie:'', deporte:'' };
+let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList = [], deporteList = [], sportsList = [], torneosList = [];
+let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubDeporte=null, unsubSports=null, unsubTorneos=null;
 let editId = null, currentRating = 0, selectedCover = null;
+
+// Configuracion por tipo de lista (anime, manga, libro, pelicula, serie)
+const LIST_TYPES = {
+  anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'eye-off' },
+  manga:    { col:'manga',    label:'manga',    labelCap:'Manga',     progresoLabel:'Capítulos',  estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off' },
+  libro:    { col:'libros',   label:'libro',    labelCap:'Libro',     progresoLabel:'Páginas',    estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off' },
+  pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off' },
+  serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off' }
+};
+function listOf(type){
+  if(type==='anime') return animeList;
+  if(type==='manga') return mangaList;
+  if(type==='libro') return libroList;
+  if(type==='pelicula') return peliculaList;
+  if(type==='serie') return serieList;
+  return [];
+}
+function setListOf(type, arr){
+  if(type==='anime') animeList = arr;
+  else if(type==='manga') mangaList = arr;
+  else if(type==='libro') libroList = arr;
+  else if(type==='pelicula') peliculaList = arr;
+  else if(type==='serie') serieList = arr;
+}
 
 // Navegacion deportes: null = vista deportes, sportId = vista torneos, {sportId,torneoId} = vista partidos
 let deporteNav = { sportId: null, torneoId: null };
@@ -365,7 +401,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubAnime,unsubManga,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -381,7 +417,7 @@ onAuthStateChanged(auth, user => {
     switchTab('anime');
   } else {
     currentUser = null;
-    animeList=[]; mangaList=[]; deporteList=[]; sportsList=[]; torneosList=[];
+    animeList=[]; mangaList=[]; libroList=[]; peliculaList=[]; serieList=[]; deporteList=[]; sportsList=[]; torneosList=[];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
@@ -391,7 +427,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubAnime,unsubManga,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
   unsubAnime = onSnapshot(userCol('anime'), snap => {
     animeList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='anime') renderTab();
@@ -399,6 +435,18 @@ function subscribeData(){
   unsubManga = onSnapshot(userCol('manga'), snap => {
     mangaList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='manga') renderTab();
+  });
+  unsubLibro = onSnapshot(userCol('libros'), snap => {
+    libroList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activeTab==='libro') renderTab();
+  });
+  unsubPelicula = onSnapshot(userCol('peliculas'), snap => {
+    peliculaList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activeTab==='pelicula') renderTab();
+  });
+  unsubSerie = onSnapshot(userCol('series'), snap => {
+    serieList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activeTab==='serie') renderTab();
   });
   unsubDeporte = onSnapshot(userCol('deportes_partidos'), snap => {
     deporteList = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -423,7 +471,7 @@ function subscribeData(){
 window.switchTab = (tab) => {
   activeTab = tab; activeFilter = 'todos';
   if(tab === 'deporte') deporteNav = { sportId:null, torneoId:null };
-  ['anime','manga','deporte'].forEach(t=>{
+  ['anime','manga','libro','pelicula','serie','deporte'].forEach(t=>{
     document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab);
   });
   renderTab();
@@ -438,10 +486,10 @@ function renderTab(){
   }
 }
 
-// ================== ANIME / MANGA ==================
+// ================== ANIME / MANGA / LIBRO / PELICULA / SERIE (listas genericas) ==================
 function renderListTab(content, type){
-  const list = type==='anime' ? animeList : mangaList;
-  const colorClass = type==='anime' ? 'anime' : 'manga';
+  const cfg = LIST_TYPES[type];
+  const list = listOf(type);
   const q = searchQuery[type].toLowerCase().trim();
   let filtered = activeFilter==='todos' ? list : list.filter(it=>it.estado===activeFilter);
   if(q) filtered = filtered.filter(it=>it.titulo.toLowerCase().includes(q));
@@ -458,15 +506,15 @@ function renderListTab(content, type){
       <div class="filter-row">
         <div class="search-box" id="search-box-${type}">
           <i class="ti ti-search"></i>
-          <input type="text" id="search-input-${type}" placeholder="Buscar en ${type==='anime'?'anime':'manga'}..." value="${esc(searchQuery[type])}" oninput="onSearchType('${type}', this.value)">
+          <input type="text" id="search-input-${type}" placeholder="Buscar en ${cfg.label}..." value="${esc(searchQuery[type])}" oninput="onSearchType('${type}', this.value)">
           <button class="clear-search" onclick="clearSearchType('${type}')"><i class="ti ti-x"></i></button>
         </div>
         <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
-        <button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${type==='anime'?'Viendo':'Leyendo'} (${counts.viendo})</button>
+        <button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${cfg.estadoViendo} (${counts.viendo})</button>
         <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendiente (${counts.pendiente})</button>
         <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Terminado (${counts.terminado})</button>
       </div>
-      <button class="btn-primary b-${colorClass}" onclick="openModal('${type}')"><i class="ti ti-plus"></i> Añadir</button>
+      <button class="btn-primary b-${type}" onclick="openModal('${type}')"><i class="ti ti-plus"></i> Añadir</button>
     </div>
     <div class="grid" id="items-grid"></div>
   `;
@@ -474,13 +522,13 @@ function renderListTab(content, type){
 
   const grid = document.getElementById('items-grid');
   if(!filtered.length){
-    grid.outerHTML = `<div class="empty-state"><i class="ti ti-${type==='anime'?'eye-off':'book-off'}"></i>${q?'Sin resultados para "'+esc(q)+'"':'Nada por aquí todavía'}<br><small style="margin-top:6px;display:block">${q?'Prueba otra búsqueda':'Pulsa "Añadir" para empezar tu lista'}</small></div>`;
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-${cfg.emptyIcon}"></i>${q?'Sin resultados para "'+esc(q)+'"':'Nada por aquí todavía'}<br><small style="margin-top:6px;display:block">${q?'Prueba otra búsqueda':'Pulsa "Añadir" para empezar tu lista'}</small></div>`;
     return;
   }
 
   grid.innerHTML = filtered.map(it=>{
     const pct = it.total ? Math.min(100, Math.round((it.actual/it.total)*100)) : 0;
-    const barColor = type==='anime' ? 'var(--c-anime)' : 'var(--c-manga)';
+    const barColor = `var(--c-${type})`;
     return `
     <div class="card">
       ${it.rating ? `<div class="rating-badge"><i class="ti ti-star" style="font-size:12px"></i>${it.rating}</div>` : ''}
@@ -488,10 +536,10 @@ function renderListTab(content, type){
         <button class="card-act-btn" onclick="editTitulo('${type}','${it.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
         <button class="card-act-btn" onclick="deleteTitulo('${type}','${it.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
       </div>
-      ${it.cover ? `<img class="card-cover" src="${it.cover}" alt="${esc(it.titulo)}">` : `<div class="card-cover-placeholder"><i class="ti ti-${type==='anime'?'movie':'book-2'}"></i></div>`}
+      ${it.cover ? `<img class="card-cover" src="${it.cover}" alt="${esc(it.titulo)}">` : `<div class="card-cover-placeholder"><i class="ti ti-${cfg.icon}"></i></div>`}
       <div class="card-body">
         <div class="card-title">${esc(it.titulo)}</div>
-        <span class="card-status status-${it.estado}">${it.estado==='viendo'?(type==='anime'?'Viendo':'Leyendo'):it.estado}</span>
+        <span class="card-status status-${it.estado}">${it.estado==='viendo'?cfg.estadoViendo:it.estado}</span>
         <div class="progress-row">
           <div class="step-row">
             <button class="step-btn" onclick="stepProgress('${type}','${it.id}',-1)" aria-label="Restar">−</button>
@@ -500,7 +548,7 @@ function renderListTab(content, type){
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <span class="progress-text">${it.actual||0}${it.total?'/'+it.total:''}</span>
         </div>
-        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir nuevo episodio/capítulo">+1 al total (nuevo cap.)</button>` : ''}
+        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir más al total">+1 al total</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -535,8 +583,9 @@ window.clearCover = () => {
 let currentModalType = 'anime';
 window.openModal = (type) => {
   currentModalType = type; editId = null; selectedCover = null; currentRating = 0;
-  document.getElementById('modal-title').textContent = type==='anime' ? 'Añadir anime' : 'Añadir manga';
-  document.getElementById('f-progreso-label').textContent = type==='anime' ? 'Episodios' : 'Capítulos';
+  const cfg = LIST_TYPES[type];
+  document.getElementById('modal-title').textContent = 'Añadir ' + cfg.label;
+  document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value='';
   document.getElementById('cover-preview').style.display='none';
   document.getElementById('f-titulo').value='';
@@ -556,12 +605,13 @@ function renderStars(){
 window.setRating = (n) => { currentRating = (currentRating===n) ? 0 : n; renderStars(); };
 
 window.editTitulo = (type, id) => {
-  const list = type==='anime' ? animeList : mangaList;
+  const list = listOf(type);
   const it = list.find(x=>x.id===id);
   if(!it) return;
   currentModalType = type; editId = id; selectedCover = it.cover || null; currentRating = it.rating || 0;
+  const cfg = LIST_TYPES[type];
   document.getElementById('modal-title').textContent = 'Editar';
-  document.getElementById('f-progreso-label').textContent = type==='anime' ? 'Episodios' : 'Capítulos';
+  document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value = it.cover || '';
   if(it.cover){
     document.getElementById('cover-img').src = it.cover;
@@ -591,7 +641,7 @@ window.saveTitulo = async () => {
     cover: selectedCover,
     updatedAt: new Date().toISOString()
   };
-  const colName = currentModalType==='anime' ? 'anime' : 'manga';
+  const colName = LIST_TYPES[currentModalType].col;
   if(editId) await updateDoc(userDoc(colName, editId), data);
   else await addDoc(userCol(colName), {...data, createdAt: new Date().toISOString()});
   closeModal();
@@ -600,12 +650,12 @@ window.saveTitulo = async () => {
 
 window.deleteTitulo = async (type, id) => {
   if(!confirm('¿Eliminar este título?')) return;
-  await deleteDoc(userDoc(type==='anime'?'anime':'manga', id));
+  await deleteDoc(userDoc(LIST_TYPES[type].col, id));
   showToast('Eliminado');
 };
 
 window.stepProgress = async (type, id, delta) => {
-  const list = type==='anime' ? animeList : mangaList;
+  const list = listOf(type);
   const it = list.find(x=>x.id===id);
   if(!it) return;
   let actual = (it.actual||0) + delta;
@@ -614,18 +664,18 @@ window.stepProgress = async (type, id, delta) => {
   const updates = { actual };
   if(it.total && actual >= it.total) updates.estado = 'terminado';
   else if(actual > 0 && it.estado === 'pendiente') updates.estado = 'viendo';
-  await updateDoc(userDoc(type==='anime'?'anime':'manga', id), updates);
+  await updateDoc(userDoc(LIST_TYPES[type].col, id), updates);
 };
 
 window.incrementTotal = async (type, id) => {
-  const list = type==='anime' ? animeList : mangaList;
+  const list = listOf(type);
   const it = list.find(x=>x.id===id);
   if(!it || !it.total) return;
   const newTotal = it.total + 1;
   const updates = { total: newTotal };
   if(it.estado === 'terminado' && (it.actual||0) < newTotal) updates.estado = 'viendo';
-  await updateDoc(userDoc(type==='anime'?'anime':'manga', id), updates);
-  showToast('Nuevo episodio/capítulo añadido ✓');
+  await updateDoc(userDoc(LIST_TYPES[type].col, id), updates);
+  showToast('Añadido al total ✓');
 };
 
 // ================== DEPORTES (3 niveles: deporte -> torneo -> partidos) ==================
