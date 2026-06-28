@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Colección TCG</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1117;color:#e8eaf0;font-size:14px;min-height:100vh}
+:root{
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2235;
+  --border:#2a2f45;--border2:#3a4060;
+  --text:#e8eaf0;--text2:#9aa0b8;--text3:#5a6080;
+  --c-pokemon:#facc15;--c-pokemon-bg:rgba(250,204,21,.15);--c-pokemon-t:#fde047;
+  --c-onepiece:#ef4444;--c-onepiece-bg:rgba(239,68,68,.15);--c-onepiece-t:#fca5a5;
+  --c-magic:#a78bfa;--c-magic-bg:rgba(167,139,250,.15);--c-magic-t:#c4b5fd;
+  --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;padding:20px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 36px;text-align:center;max-width:360px;width:100%}
+.login-title{font-size:28px;font-weight:700;background:linear-gradient(135deg,#facc15,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.login-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 20px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .15s}
+.btn-google:hover{background:var(--border);border-color:var(--border2)}
+.btn-google img{width:20px;height:20px}
+
+#app-screen{display:none}
+.app{max-width:1100px;margin:0 auto;padding:24px}
+
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.app-title{font-size:22px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,#facc15,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.user-row{display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.user-name{font-size:13px;color:var(--text2)}
+.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:3px;font-family:inherit}
+.btn-logout:hover{color:var(--c-danger)}
+
+.summary-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:18px;flex-wrap:wrap;gap:14px}
+.summary-item{display:flex;flex-direction:column}
+.summary-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:3px}
+.summary-value{font-size:20px;font-weight:700;color:var(--text)}
+
+.tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{background:none;border:none;padding:10px 16px;cursor:pointer;color:var(--text3);font-size:14px;font-weight:600;font-family:inherit;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--text)}
+.tab-btn.active.t-pokemon{border-color:var(--c-pokemon);color:var(--c-pokemon-t)}
+.tab-btn.active.t-onepiece{border-color:var(--c-onepiece);color:var(--c-onepiece-t)}
+.tab-btn.active.t-magic{border-color:var(--c-magic);color:var(--c-magic-t)}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.filter-chip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:5px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-family:inherit;transition:all .15s}
+.filter-chip:hover{border-color:var(--border2)}
+.filter-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn-primary{border:none;border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;transition:opacity .15s;color:#1a1a1a}
+.btn-primary:hover{opacity:.85}
+.btn-primary.b-pokemon{background:var(--c-pokemon)}
+.btn-primary.b-onepiece{background:var(--c-onepiece);color:#fff}
+.btn-primary.b-magic{background:var(--c-magic);color:#1a1a1a}
+
+.search-box{position:relative;flex:1;max-width:260px;min-width:160px}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px 7px 32px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--border2)}
+.search-box i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px}
+.search-box .clear-search{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;display:none}
+.search-box.has-text .clear-search{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .15s;position:relative;display:flex;flex-direction:column}
+.card:hover{border-color:var(--border2)}
+.card-cover{width:100%;aspect-ratio:5/7;background:var(--bg3);object-fit:cover;display:block}
+.card-cover-placeholder{width:100%;aspect-ratio:5/7;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:32px}
+.card-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-cond{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;width:fit-content;text-transform:uppercase;letter-spacing:.03em;background:var(--bg3);color:var(--text2)}
+.card-bottom-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:6px}
+.card-qty{display:flex;align-items:center;gap:4px}
+.step-btn{width:20px;height:20px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1}
+.step-btn:hover{background:var(--border);color:var(--text)}
+.qty-text{font-size:12px;color:var(--text2);min-width:14px;text-align:center}
+.card-price{font-size:13px;font-weight:700;color:var(--text)}
+.card-total-price{font-size:10px;color:var(--text3)}
+.card-actions{display:flex;gap:4px;position:absolute;top:6px;right:6px;opacity:0;transition:opacity .15s}
+.card:hover .card-actions{opacity:1}
+.card-act-btn{background:rgba(15,17,23,.85);border:none;border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px}
+.card-act-btn:hover{color:#fff}
+
+.empty-state{text-align:center;color:var(--text3);padding:60px 0;font-size:13px}
+.empty-state i{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:22px;width:380px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.form-group{margin-bottom:11px}
+.form-group label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--border2)}
+.form-group select option{background:var(--bg2)}
+.form-row{display:flex;gap:8px}
+.form-row .form-group{flex:1}
+.cover-preview{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cover-preview img{width:50px;height:70px;object-fit:cover;border-radius:6px;background:var(--bg3)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+.btn-cancel:hover{background:var(--bg3);color:var(--text)}
+.btn-save{padding:7px 18px;border-radius:var(--radius);border:none;color:#1a1a1a;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:opacity .15s}
+.btn-save:hover{opacity:.85}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--text);z-index:300;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:400;flex-direction:column;gap:12px}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-pokemon);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--text3);font-size:13px}
+
+@media(max-width:600px){
+  .app{padding:14px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="loading-spinner"></div><p>Cargando...</p></div>
+
+<div id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-title">Mi Colección TCG</div>
+    <div class="login-sub">Inicia sesión para acceder a tu colección de cartas</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continuar con Google
+    </button>
+  </div>
+</div>
+
+<div id="app-screen">
+<div class="app">
+  <div class="top-bar">
+    <span class="app-title">Mi Colección TCG</span>
+    <div class="user-row">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name" id="user-name"></span>
+      <button class="btn-logout" onclick="logout()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <div class="summary-bar" id="summary-bar"></div>
+
+  <div class="tabs">
+    <button class="tab-btn t-pokemon" onclick="switchTab('pokemon')" id="tabbtn-pokemon"><i class="ti ti-pokeball"></i> Pokémon TCG</button>
+    <button class="tab-btn t-onepiece" onclick="switchTab('onepiece')" id="tabbtn-onepiece"><i class="ti ti-anchor"></i> One Piece</button>
+    <button class="tab-btn t-magic" onclick="switchTab('magic')" id="tabbtn-magic"><i class="ti ti-wand"></i> Magic</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+</div>
+
+<!-- Modal carta -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modal-title">Añadir carta</h2>
+    <div class="cover-preview" id="cover-preview" style="display:none">
+      <img id="cover-img" src="" alt="">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Vista previa</div>
+        <button class="btn-cancel" style="margin-top:4px;padding:3px 8px;font-size:11px" onclick="clearCover()">Quitar imagen</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nombre de la carta</label>
+      <input type="text" id="f-nombre" placeholder="Ej: Charizard VMAX, Luffy Gear 5...">
+    </div>
+    <div class="form-group">
+      <label>URL de la imagen (opcional)</label>
+      <input type="text" id="f-cover-url" placeholder="Pega aquí el enlace de una imagen..." oninput="onCoverUrlInput()">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Condición</label>
+        <select id="f-condicion">
+          <option>Normal</option>
+          <option>Holo</option>
+          <option>Reverse Holo</option>
+          <option>Full Art</option>
+          <option>Alt Art</option>
+          <option>Secreta</option>
+          <option>Promo</option>
+          <option>Primera edición</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" id="f-cantidad" min="1" value="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Precio estimado por unidad (€)</label>
+      <input type="number" step="0.01" id="f-precio" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Notas (opcional)</label>
+      <textarea id="f-notas" placeholder="Set, número de carta, idioma..." style="min-height:50px;resize:vertical"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" id="btn-save" onclick="saveCarta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
+  authDomain: "mi-agenda-personal-1e740.firebaseapp.com",
+  projectId: "mi-agenda-personal-1e740",
+  storageBucket: "mi-agenda-personal-1e740.firebasestorage.app",
+  messagingSenderId: "412139173597",
+  appId: "1:412139173597:web:78d90392260f1e7864cd34"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const GAMES = {
+  pokemon:  { col:'tcg_pokemon',  label:'Pokémon TCG', icon:'pokeball' },
+  onepiece: { col:'tcg_onepiece', label:'One Piece',   icon:'anchor' },
+  magic:    { col:'tcg_magic',    label:'Magic',       icon:'wand' }
+};
+
+let currentUser = null;
+let activeTab = 'pokemon';
+let searchQuery = { pokemon:'', onepiece:'', magic:'' };
+let cartasLists = { pokemon:[], onepiece:[], magic:[] };
+let unsubs = { pokemon:null, onepiece:null, magic:null };
+let editId = null, selectedCover = null, currentModalType = 'pokemon';
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtMoney(n){ return (n||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+window.loginGoogle = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch(e){ showToast('Error al iniciar sesión'); }
+};
+window.logout = async () => {
+  Object.values(unsubs).forEach(u=>u&&u());
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, user => {
+  document.getElementById('loading').style.display = 'none';
+  if(user){
+    currentUser = user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('user-name').textContent = user.displayName || user.email;
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    subscribeData();
+    switchTab('pokemon');
+  } else {
+    currentUser = null;
+    cartasLists = { pokemon:[], onepiece:[], magic:[] };
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+
+function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
+function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
+
+function subscribeData(){
+  Object.values(unsubs).forEach(u=>u&&u());
+  Object.keys(GAMES).forEach(type=>{
+    unsubs[type] = onSnapshot(userCol(GAMES[type].col), snap => {
+      cartasLists[type] = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderSummary();
+      if(activeTab===type) renderTab();
+    });
+  });
+}
+
+function renderSummary(){
+  const all = [...cartasLists.pokemon, ...cartasLists.onepiece, ...cartasLists.magic];
+  const totalCartas = all.reduce((s,c)=>s+(c.cantidad||1),0);
+  const totalValor = all.reduce((s,c)=>s+(c.precio||0)*(c.cantidad||1),0);
+  const valorPokemon = cartasLists.pokemon.reduce((s,c)=>s+(c.precio||0)*(c.cantidad||1),0);
+  const valorOnepiece = cartasLists.onepiece.reduce((s,c)=>s+(c.precio||0)*(c.cantidad||1),0);
+  const valorMagic = cartasLists.magic.reduce((s,c)=>s+(c.precio||0)*(c.cantidad||1),0);
+
+  document.getElementById('summary-bar').innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Valor total colección</span>
+      <span class="summary-value">${fmtMoney(totalValor)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Cartas totales</span>
+      <span class="summary-value">${totalCartas}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label" style="color:var(--c-pokemon-t)">Pokémon</span>
+      <span class="summary-value" style="font-size:15px">${fmtMoney(valorPokemon)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label" style="color:var(--c-onepiece-t)">One Piece</span>
+      <span class="summary-value" style="font-size:15px">${fmtMoney(valorOnepiece)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label" style="color:var(--c-magic-t)">Magic</span>
+      <span class="summary-value" style="font-size:15px">${fmtMoney(valorMagic)}</span>
+    </div>
+  `;
+}
+
+window.switchTab = (tab) => {
+  activeTab = tab;
+  Object.keys(GAMES).forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
+  renderTab();
+};
+
+function renderTab(){
+  const content = document.getElementById('tab-content');
+  const type = activeTab;
+  const cfg = GAMES[type];
+  const list = cartasLists[type];
+  const q = searchQuery[type].toLowerCase().trim();
+  let filtered = list;
+  if(q) filtered = filtered.filter(c=>c.nombre.toLowerCase().includes(q));
+
+  const valorTab = list.reduce((s,c)=>s+(c.precio||0)*(c.cantidad||1),0);
+  const cartasTab = list.reduce((s,c)=>s+(c.cantidad||1),0);
+
+  content.innerHTML = `
+    <div class="toolbar">
+      <div class="filter-row">
+        <div class="search-box" id="search-box-${type}">
+          <i class="ti ti-search"></i>
+          <input type="text" id="search-input-${type}" placeholder="Buscar carta..." value="${esc(searchQuery[type])}" oninput="onSearchType('${type}', this.value)">
+          <button class="clear-search" onclick="clearSearchType('${type}')"><i class="ti ti-x"></i></button>
+        </div>
+        <span style="font-size:12px;color:var(--text3)">${cartasTab} carta${cartasTab!==1?'s':''} · ${fmtMoney(valorTab)}</span>
+      </div>
+      <button class="btn-primary b-${type}" onclick="openModal('${type}')"><i class="ti ti-plus"></i> Añadir carta</button>
+    </div>
+    <div class="grid" id="items-grid"></div>
+  `;
+  if(q) document.getElementById('search-box-'+type).classList.add('has-text');
+
+  const grid = document.getElementById('items-grid');
+  if(!filtered.length){
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-cards"></i>${q?'Sin resultados para "'+esc(q)+'"':'Sin cartas en '+cfg.label+' todavía'}<br><small style="margin-top:6px;display:block">${q?'Prueba otra búsqueda':'Pulsa "Añadir carta" para empezar tu colección'}</small></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c=>{
+    const totalLinea = (c.precio||0)*(c.cantidad||1);
+    return `
+    <div class="card">
+      <div class="card-actions">
+        <button class="card-act-btn" onclick="editCarta('${type}','${c.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" onclick="deleteCarta('${type}','${c.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+      ${c.cover ? `<img class="card-cover" src="${c.cover}" alt="${esc(c.nombre)}">` : `<div class="card-cover-placeholder"><i class="ti ti-cards"></i></div>`}
+      <div class="card-body">
+        <div class="card-title">${esc(c.nombre)}</div>
+        <span class="card-cond">${esc(c.condicion||'Normal')}</span>
+        <div class="card-bottom-row">
+          <div class="card-qty">
+            <button class="step-btn" onclick="stepCantidad('${type}','${c.id}',-1)" aria-label="Restar">−</button>
+            <span class="qty-text">x${c.cantidad||1}</span>
+            <button class="step-btn" onclick="stepCantidad('${type}','${c.id}',1)" aria-label="Sumar">+</button>
+          </div>
+          <div style="text-align:right">
+            <div class="card-price">${fmtMoney(c.precio||0)}</div>
+            ${(c.cantidad||1)>1?`<div class="card-total-price">${fmtMoney(totalLinea)} total</div>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.onSearchType = (type, val) => {
+  searchQuery[type] = val;
+  document.getElementById('search-box-'+type)?.classList.toggle('has-text', !!val);
+  renderTab();
+  setTimeout(()=>{
+    const inp = document.getElementById('search-input-'+type);
+    if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); }
+  },0);
+};
+window.clearSearchType = (type) => { searchQuery[type]=''; renderTab(); };
+
+window.onCoverUrlInput = () => {
+  const url = document.getElementById('f-cover-url').value.trim();
+  if(!url){ document.getElementById('cover-preview').style.display='none'; selectedCover=null; return; }
+  selectedCover = url;
+  document.getElementById('cover-img').src = url;
+  document.getElementById('cover-preview').style.display = 'flex';
+};
+window.clearCover = () => {
+  selectedCover = null;
+  document.getElementById('f-cover-url').value = '';
+  document.getElementById('cover-preview').style.display = 'none';
+};
+
+window.openModal = (type) => {
+  currentModalType = type; editId = null; selectedCover = null;
+  document.getElementById('modal-title').textContent = 'Añadir carta — ' + GAMES[type].label;
+  document.getElementById('f-cover-url').value='';
+  document.getElementById('cover-preview').style.display='none';
+  document.getElementById('f-nombre').value='';
+  document.getElementById('f-condicion').value='Normal';
+  document.getElementById('f-cantidad').value=1;
+  document.getElementById('f-precio').value='';
+  document.getElementById('f-notas').value='';
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('f-nombre').focus(),60);
+};
+window.closeModal = () => document.getElementById('modal-bg').classList.remove('open');
+
+window.editCarta = (type, id) => {
+  const c = cartasLists[type].find(x=>x.id===id);
+  if(!c) return;
+  currentModalType = type; editId = id; selectedCover = c.cover || null;
+  document.getElementById('modal-title').textContent = 'Editar carta';
+  document.getElementById('f-cover-url').value = c.cover || '';
+  if(c.cover){
+    document.getElementById('cover-img').src = c.cover;
+    document.getElementById('cover-preview').style.display='flex';
+  } else {
+    document.getElementById('cover-preview').style.display='none';
+  }
+  document.getElementById('f-nombre').value = c.nombre;
+  document.getElementById('f-condicion').value = c.condicion || 'Normal';
+  document.getElementById('f-cantidad').value = c.cantidad || 1;
+  document.getElementById('f-precio').value = c.precio || '';
+  document.getElementById('f-notas').value = c.notas || '';
+  document.getElementById('modal-bg').classList.add('open');
+};
+
+window.saveCarta = async () => {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  if(!nombre){ document.getElementById('f-nombre').focus(); return; }
+  const data = {
+    nombre,
+    condicion: document.getElementById('f-condicion').value,
+    cantidad: parseInt(document.getElementById('f-cantidad').value) || 1,
+    precio: parseFloat(document.getElementById('f-precio').value) || 0,
+    notas: document.getElementById('f-notas').value.trim(),
+    cover: selectedCover,
+    updatedAt: new Date().toISOString()
+  };
+  const colName = GAMES[currentModalType].col;
+  if(editId) await updateDoc(userDoc(colName, editId), data);
+  else await addDoc(userCol(colName), {...data, createdAt: new Date().toISOString()});
+  closeModal();
+  showToast(editId?'Actualizada':'Carta añadida ✓');
+};
+
+window.deleteCarta = async (type, id) => {
+  if(!confirm('¿Eliminar esta carta?')) return;
+  await deleteDoc(userDoc(GAMES[type].col, id));
+  showToast('Eliminada');
+};
+
+window.stepCantidad = async (type, id, delta) => {
+  const c = cartasLists[type].find(x=>x.id===id);
+  if(!c) return;
+  let cantidad = (c.cantidad||1) + delta;
+  if(cantidad < 1) cantidad = 1;
+  await updateDoc(userDoc(GAMES[type].col, id), {cantidad});
+};
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeModal(); }
+});
+</script>
+</body>
+</html>
