@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Gimnasio</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1117;color:#e8eaf0;font-size:14px;min-height:100vh}
+:root{
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2235;
+  --border:#2a2f45;--border2:#3a4060;
+  --text:#e8eaf0;--text2:#9aa0b8;--text3:#5a6080;
+  --c-fuerza:#ef4444;--c-fuerza-bg:rgba(239,68,68,.15);--c-fuerza-t:#fca5a5;
+  --c-cardio:#3b82f6;--c-cardio-bg:rgba(59,130,246,.15);--c-cardio-t:#93bbfc;
+  --c-peso:#a78bfa;--c-peso-bg:rgba(167,139,250,.15);--c-peso-t:#c4b5fd;
+  --c-comida:#f59e0b;--c-comida-bg:rgba(245,158,11,.15);--c-comida-t:#fcd34d;
+  --c-quemado:#22c55e;--c-quemado-bg:rgba(34,197,94,.15);--c-quemado-t:#86efac;
+  --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;padding:20px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 36px;text-align:center;max-width:360px;width:100%}
+.login-title{font-size:28px;font-weight:700;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.login-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 20px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .15s}
+.btn-google:hover{background:var(--border);border-color:var(--border2)}
+.btn-google img{width:20px;height:20px}
+
+#app-screen{display:none}
+.app{max-width:1150px;margin:0 auto;padding:24px}
+
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.app-title{font-size:22px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.user-row{display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.user-name{font-size:13px;color:var(--text2)}
+.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:3px;font-family:inherit}
+.btn-logout:hover{color:var(--c-danger)}
+
+.weight-config{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:16px;flex-wrap:wrap}
+.weight-config label{font-size:12px;color:var(--text2)}
+.weight-config input{width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:5px 8px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.weight-config button{background:var(--c-fuerza);color:#fff;border:none;border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
+
+.tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{background:none;border:none;padding:10px 16px;cursor:pointer;color:var(--text3);font-size:14px;font-weight:600;font-family:inherit;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--text)}
+
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.summary-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:5px}
+.summary-value{font-size:18px;font-weight:700;color:var(--text)}
+.summary-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.btn-primary{border:none;border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;transition:opacity .15s;color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;background:var(--bg3);color:var(--text2);transition:all .15s}
+.btn-secondary:hover{background:var(--border);color:var(--text)}
+
+.day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.day-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.day-card:hover{border-color:var(--c-fuerza)}
+.day-card.rest{opacity:.6}
+.day-name{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.day-focus{font-size:14px;font-weight:600;color:var(--text)}
+.day-meta{font-size:11px;color:var(--text3);margin-top:4px}
+.day-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.day-card:hover .day-actions{opacity:1}
+.card-act-btn{background:rgba(15,17,23,.85);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:13px}
+.card-act-btn:hover{color:#fff}
+
+.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:16px;font-size:13px;flex-wrap:wrap}
+.breadcrumb-item{color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px}
+.breadcrumb-item:hover{color:var(--text2)}
+.breadcrumb-item.current{color:var(--text);font-weight:600;cursor:default}
+.breadcrumb-sep{color:var(--text3);font-size:11px}
+
+.exercise-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px}
+.exercise-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.exercise-name{font-size:14px;font-weight:600;color:var(--text)}
+.exercise-actions{display:flex;gap:4px}
+.act-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;font-size:15px;line-height:1;transition:color .15s}
+.act-btn:hover{color:var(--c-danger)}
+.sets-table{width:100%;font-size:12px;margin-bottom:8px}
+.sets-table th{text-align:left;color:var(--text3);font-weight:600;padding:4px 6px;text-transform:uppercase;font-size:10px;letter-spacing:.03em}
+.sets-table td{padding:4px 6px;color:var(--text)}
+.sets-table tr:not(:last-child) td{border-bottom:1px solid var(--border)}
+.progress-hint{font-size:11px;display:flex;align-items:center;gap:4px}
+.progress-up{color:var(--c-quemado-t)}
+.progress-down{color:var(--c-danger)}
+.add-set-row{display:flex;gap:6px;margin-top:8px}
+.add-set-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.add-set-row button{background:var(--c-fuerza);color:#fff;border:none;border-radius:var(--radius);padding:6px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;white-space:nowrap}
+
+.cardio-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cardio-info{display:flex;flex-direction:column}
+.cardio-name{font-size:13px;font-weight:600;color:var(--text)}
+.cardio-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.cardio-kcal{font-size:16px;font-weight:700;color:var(--c-quemado-t)}
+
+.weight-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:20px}
+.chart-card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px}
+
+.comida-card{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);margin-bottom:6px}
+.comida-icon{width:34px;height:34px;border-radius:8px;background:var(--c-comida-bg);color:var(--c-comida-t);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.comida-body{flex:1;min-width:0}
+.comida-title{font-size:13px;font-weight:600;color:var(--text)}
+.comida-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.comida-kcal{font-size:14px;font-weight:700;color:var(--c-comida-t);flex-shrink:0}
+.comida-actions{display:flex;gap:3px;flex-shrink:0}
+
+.empty-state{text-align:center;color:var(--text3);padding:50px 0;font-size:13px}
+.empty-state i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
+
+.date-nav{display:flex;align-items:center;gap:10px;margin-bottom:18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px}
+.date-nav button{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.date-nav button:hover{background:var(--border);color:var(--text)}
+.date-nav .date-label{flex:1;text-align:center;font-weight:600;font-size:14px}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:22px;width:420px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.form-group{margin-bottom:11px}
+.form-group label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--border2)}
+.form-group select option{background:var(--bg2)}
+.form-row{display:flex;gap:8px}
+.form-row .form-group{flex:1}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+.btn-cancel:hover{background:var(--bg3);color:var(--text)}
+.btn-save{padding:7px 18px;border-radius:var(--radius);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:opacity .15s}
+.btn-save:hover{opacity:.85}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--text);z-index:300;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:400;flex-direction:column;gap:12px}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-fuerza);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--text3);font-size:13px}
+
+@media(max-width:700px){
+  .app{padding:14px}
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .day-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="loading-spinner"></div><p>Cargando...</p></div>
+
+<div id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-title">Mi Gimnasio</div>
+    <div class="login-sub">Inicia sesión para acceder a tu rutina, peso y nutrición</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continuar con Google
+    </button>
+  </div>
+</div>
+
+<div id="app-screen">
+<div class="app">
+  <div class="top-bar">
+    <span class="app-title">Mi Gimnasio</span>
+    <div class="user-row">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name" id="user-name"></span>
+      <button class="btn-logout" onclick="logout()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <div class="weight-config">
+    <label>Tu peso actual para cálculos de calorías:</label>
+    <input type="number" step="0.1" id="cfg-peso" placeholder="kg">
+    <span style="color:var(--text3);font-size:12px">kg</span>
+    <button onclick="saveConfigPeso()">Guardar</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('rutina')" id="tabbtn-rutina"><i class="ti ti-barbell"></i> Rutina</button>
+    <button class="tab-btn" onclick="switchTab('cardio')" id="tabbtn-cardio"><i class="ti ti-run"></i> Cardio</button>
+    <button class="tab-btn" onclick="switchTab('peso')" id="tabbtn-peso"><i class="ti ti-scale"></i> Peso corporal</button>
+    <button class="tab-btn" onclick="switchTab('nutricion')" id="tabbtn-nutricion"><i class="ti ti-apple"></i> Nutrición</button>
+    <button class="tab-btn" onclick="switchTab('balance')" id="tabbtn-balance"><i class="ti ti-scale-2"></i> Balance</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+</div>
+
+<!-- Modal dia rutina -->
+<div class="modal-bg" id="day-modal-bg" onclick="if(event.target===this)closeDayModal()">
+  <div class="modal">
+    <h2 id="day-modal-title">Configurar día</h2>
+    <div class="form-group">
+      <label>Día de la semana</label>
+      <select id="dy-dia" disabled></select>
+    </div>
+    <div class="form-group">
+      <label>Grupo muscular / enfoque</label>
+      <input type="text" id="dy-focus" placeholder="Ej: Pecho y tríceps, Descanso...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDayModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-fuerza)" onclick="saveDay()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nuevo ejercicio -->
+<div class="modal-bg" id="ex-modal-bg" onclick="if(event.target===this)closeExModal()">
+  <div class="modal">
+    <h2>Nuevo ejercicio</h2>
+    <div class="form-group">
+      <label>Nombre del ejercicio</label>
+      <input type="text" id="ex-nombre" placeholder="Ej: Press banca, Dominadas...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeExModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-fuerza)" onclick="saveEx()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cardio -->
+<div class="modal-bg" id="cardio-modal-bg" onclick="if(event.target===this)closeCardioModal()">
+  <div class="modal">
+    <h2>Añadir cardio</h2>
+    <div class="form-group">
+      <label>Actividad</label>
+      <select id="c-actividad" onchange="updateCardioKcal()">
+        <option value="3.5">Andar (ritmo normal)</option>
+        <option value="5.0">Andar rápido</option>
+        <option value="7.0">Andar cuesta arriba / trekking</option>
+        <option value="9.8">Correr (8km/h)</option>
+        <option value="11.8">Correr (10km/h)</option>
+        <option value="13.5">Correr (12km/h)</option>
+        <option value="7.5">Bicicleta (ritmo moderado)</option>
+        <option value="10.0">Bicicleta (ritmo intenso)</option>
+        <option value="7.0">Nadar</option>
+        <option value="8.0">Elíptica</option>
+        <option value="6.0">Comba / saltar cuerda</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="c-fecha">
+      </div>
+      <div class="form-group">
+        <label>Duración (minutos)</label>
+        <input type="number" id="c-duracion" placeholder="30" oninput="updateCardioKcal()">
+      </div>
+    </div>
+    <div style="background:var(--c-quemado-bg);border-radius:var(--radius);padding:10px 12px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--c-quemado-t)">Calorías estimadas</span>
+      <strong style="font-size:18px;color:var(--c-quemado-t)" id="cardio-kcal-preview">0 kcal</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeCardioModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-cardio)" onclick="saveCardio()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal peso -->
+<div class="modal-bg" id="peso-modal-bg" onclick="if(event.target===this)closePesoModal()">
+  <div class="modal">
+    <h2>Registrar peso corporal</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="p-fecha">
+      </div>
+      <div class="form-group">
+        <label>Peso (kg)</label>
+        <input type="number" step="0.1" id="p-peso" placeholder="0.0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePesoModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-peso)" onclick="savePesoEntry()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal comida -->
+<div class="modal-bg" id="comida-modal-bg" onclick="if(event.target===this)closeComidaModal()">
+  <div class="modal">
+    <h2>Añadir comida</h2>
+    <div class="form-group">
+      <label>Descripción</label>
+      <input type="text" id="m-desc" placeholder="Ej: Pollo con arroz, Batido proteína...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Calorías (kcal)</label>
+        <input type="number" id="m-kcal" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="m-fecha">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tipo de comida</label>
+      <select id="m-tipo">
+        <option>Desayuno</option>
+        <option>Almuerzo</option>
+        <option>Comida</option>
+        <option>Merienda</option>
+        <option>Cena</option>
+        <option>Snack</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeComidaModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-comida)" onclick="saveComida()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
+  authDomain: "mi-agenda-personal-1e740.firebaseapp.com",
+  projectId: "mi-agenda-personal-1e740",
+  storageBucket: "mi-agenda-personal-1e740.firebasestorage.app",
+  messagingSenderId: "412139173597",
+  appId: "1:412139173597:web:78d90392260f1e7864cd34"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const MET_MUSCULACION = 5.0;
+
+let currentUser = null;
+let activeTab = 'rutina';
+let pesoCorporal = 75;
+let diasRutina = {}, ejerciciosList = [], registrosList = [], cardioList = [], pesoList = [], comidasList = [];
+let unsubDias=null, unsubEj=null, unsubReg=null, unsubCardio=null, unsubPeso=null, unsubComida=null, unsubConfig=null;
+let navDiaId = null;
+let editId = null;
+let balanceDate = new Date();
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+window.loginGoogle = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch(e){ showToast('Error al iniciar sesión'); }
+};
+window.logout = async () => {
+  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig].forEach(u=>u&&u());
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, user => {
+  document.getElementById('loading').style.display = 'none';
+  if(user){
+    currentUser = user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('user-name').textContent = user.displayName || user.email;
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    subscribeData();
+    switchTab('rutina');
+  } else {
+    currentUser = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+
+function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
+function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
+
+function subscribeData(){
+  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig].forEach(u=>u&&u());
+
+  unsubConfig = onSnapshot(userDoc('gym_meta','config'), snap => {
+    pesoCorporal = snap.exists() ? (snap.data().pesoActual || 75) : 75;
+    document.getElementById('cfg-peso').value = pesoCorporal;
+    renderActiveTab();
+  });
+
+  unsubDias = onSnapshot(userCol('gym_dias'), snap => {
+    diasRutina = {};
+    snap.docs.forEach(d=>{ diasRutina[d.data().dia] = {id:d.id, ...d.data()}; });
+    if(activeTab==='rutina') renderActiveTab();
+  });
+
+  unsubEj = onSnapshot(userCol('gym_ejercicios'), snap => {
+    ejerciciosList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activeTab==='rutina' && navDiaId) renderActiveTab();
+  });
+
+  unsubReg = onSnapshot(userCol('gym_registros'), snap => {
+    registrosList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    registrosList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='rutina' && navDiaId) renderActiveTab();
+  });
+
+  unsubCardio = onSnapshot(userCol('gym_cardio'), snap => {
+    cardioList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    cardioList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='cardio' || activeTab==='balance') renderActiveTab();
+  });
+
+  unsubPeso = onSnapshot(userCol('gym_peso'), snap => {
+    pesoList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    pesoList.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    if(activeTab==='peso') renderActiveTab();
+  });
+
+  unsubComida = onSnapshot(userCol('gym_comidas'), snap => {
+    comidasList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    comidasList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='nutricion' || activeTab==='balance') renderActiveTab();
+  });
+}
+
+window.saveConfigPeso = async () => {
+  const val = parseFloat(document.getElementById('cfg-peso').value);
+  if(!val || val<=0) return;
+  await setDoc(userDoc('gym_meta','config'), {pesoActual: val}, {merge:true});
+  showToast('Peso actualizado ✓');
+};
+
+window.switchTab = (tab) => {
+  activeTab = tab; navDiaId = null;
+  ['rutina','cardio','peso','nutricion','balance'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
+  renderActiveTab();
+};
+
+function renderActiveTab(){
+  const content = document.getElementById('tab-content');
+  if(activeTab === 'rutina'){
+    if(!navDiaId) renderDiasLevel(content);
+    else renderEjerciciosLevel(content);
+  } else if(activeTab === 'cardio') renderCardioTab(content);
+  else if(activeTab === 'peso') renderPesoTab(content);
+  else if(activeTab === 'nutricion') renderNutricionTab(content);
+  else if(activeTab === 'balance') renderBalanceTab(content);
+}
+
+// ================== RUTINA: DIAS ==================
+function renderDiasLevel(content){
+  content.innerHTML = `<div class="day-grid" id="days-grid"></div>`;
+  const grid = document.getElementById('days-grid');
+  grid.innerHTML = DIAS.map(dia=>{
+    const d = diasRutina[dia];
+    const focus = d ? d.focus : '';
+    const isRest = focus.toLowerCase().includes('descanso') || !focus;
+    const nEx = d ? ejerciciosList.filter(e=>e.diaId===d.id).length : 0;
+    return `
+    <div class="day-card ${isRest?'rest':''}" onclick="${d?`openDia('${d.id}')`:`openDayModal('${dia}')`}">
+      <div class="day-actions">
+        <button class="card-act-btn" onclick="event.stopPropagation();openDayModal('${dia}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+      </div>
+      <div class="day-name">${dia}</div>
+      <div class="day-focus">${focus ? esc(focus) : 'Sin configurar'}</div>
+      ${d && !isRest ? `<div class="day-meta">${nEx} ejercicio${nEx!==1?'s':''}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+window.openDia = (diaDocId) => { navDiaId = diaDocId; renderActiveTab(); };
+window.backToDias = () => { navDiaId = null; renderActiveTab(); };
+
+window.openDayModal = (dia) => {
+  editId = dia;
+  document.getElementById('day-modal-title').textContent = 'Configurar ' + dia;
+  const sel = document.getElementById('dy-dia');
+  sel.innerHTML = `<option>${dia}</option>`;
+  document.getElementById('dy-focus').value = diasRutina[dia] ? diasRutina[dia].focus : '';
+  document.getElementById('day-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('dy-focus').focus(),60);
+};
+window.closeDayModal = () => document.getElementById('day-modal-bg').classList.remove('open');
+window.saveDay = async () => {
+  const dia = editId;
+  const focus = document.getElementById('dy-focus').value.trim();
+  const existing = diasRutina[dia];
+  if(existing) await updateDoc(userDoc('gym_dias', existing.id), {focus});
+  else await addDoc(userCol('gym_dias'), {dia, focus, createdAt:new Date().toISOString()});
+  closeDayModal();
+  showToast('Día actualizado ✓');
+};
+
+// ================== RUTINA: EJERCICIOS ==================
+function renderEjerciciosLevel(content){
+  const diaEntry = Object.values(diasRutina).find(d=>d.id===navDiaId);
+  if(!diaEntry){ navDiaId=null; renderActiveTab(); return; }
+  const exs = ejerciciosList.filter(e=>e.diaId===navDiaId);
+
+  content.innerHTML = `
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" onclick="backToDias()"><i class="ti ti-calendar"></i> Rutina</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item current">${esc(diaEntry.dia)} — ${esc(diaEntry.focus||'')}</span>
+    </div>
+    <div class="toolbar">
+      <div></div>
+      <button class="btn-primary" style="background:var(--c-fuerza)" onclick="openExModal()"><i class="ti ti-plus"></i> Nuevo ejercicio</button>
+    </div>
+    <div id="exercises-list"></div>
+  `;
+  const list = document.getElementById('exercises-list');
+  if(!exs.length){
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-barbell"></i>Sin ejercicios en este día<br><small style="margin-top:6px;display:block">Añade el primer ejercicio de la rutina</small></div>`;
+    return;
+  }
+  list.innerHTML = exs.map(ex=>{
+    const regs = registrosList.filter(r=>r.ejercicioId===ex.id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    const lastReg = regs[0];
+    const prevReg = regs[1];
+    let progressHtml = '';
+    if(lastReg && prevReg){
+      const lastVol = lastReg.sets.reduce((s,set)=>s+set.reps*set.peso,0);
+      const prevVol = prevReg.sets.reduce((s,set)=>s+set.reps*set.peso,0);
+      const diff = lastVol - prevVol;
+      if(diff !== 0){
+        progressHtml = `<span class="progress-hint ${diff>0?'progress-up':'progress-down'}"><i class="ti ti-trending-${diff>0?'up':'down'}"></i>${diff>0?'+':''}${diff.toFixed(0)}kg de volumen vs sesión anterior</span>`;
+      }
+    }
+    return `
+    <div class="exercise-card">
+      <div class="exercise-top">
+        <span class="exercise-name">${esc(ex.nombre)}</span>
+        <div class="exercise-actions">
+          <button class="act-btn" onclick="deleteEx('${ex.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      ${lastReg ? `
+        <table class="sets-table">
+          <tr><th>Serie</th><th>Reps</th><th>Peso</th></tr>
+          ${lastReg.sets.map((s,i)=>`<tr><td>${i+1}</td><td>${s.reps}</td><td>${s.peso}kg</td></tr>`).join('')}
+        </table>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Última sesión: ${fmtDate(lastReg.fecha)}</div>
+        ${progressHtml}
+      ` : `<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Sin registros todavía</div>`}
+      <div class="add-set-row">
+        <input type="number" placeholder="Reps" class="new-reps-${ex.id}">
+        <input type="number" step="0.5" placeholder="Peso (kg)" class="new-peso-${ex.id}">
+        <button onclick="addQuickSet('${ex.id}')">Registrar serie de hoy</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(fecha){
+  const [y,m,d] = (fecha||'').split('-');
+  return y ? `${d}/${m}/${y}` : '';
+}
+
+window.openExModal = () => {
+  document.getElementById('ex-nombre').value = '';
+  document.getElementById('ex-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('ex-nombre').focus(),60);
+};
+window.closeExModal = () => document.getElementById('ex-modal-bg').classList.remove('open');
+window.saveEx = async () => {
+  const nombre = document.getElementById('ex-nombre').value.trim();
+  if(!nombre) return;
+  await addDoc(userCol('gym_ejercicios'), {nombre, diaId: navDiaId, createdAt:new Date().toISOString()});
+  closeExModal();
+  showToast('Ejercicio añadido ✓');
+};
+window.deleteEx = async (id) => {
+  if(!confirm('¿Eliminar este ejercicio y todos sus registros?')) return;
+  await deleteDoc(userDoc('gym_ejercicios', id));
+  const regs = registrosList.filter(r=>r.ejercicioId===id);
+  for(const r of regs) await deleteDoc(userDoc('gym_registros', r.id));
+  showToast('Eliminado');
+};
+
+window.addQuickSet = async (exId) => {
+  const repsInput = document.querySelector('.new-reps-'+exId);
+  const pesoInput = document.querySelector('.new-peso-'+exId);
+  const reps = parseInt(repsInput.value);
+  const peso = parseFloat(pesoInput.value);
+  if(!reps || peso===null || isNaN(peso)){ showToast('Indica repeticiones y peso'); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const existing = registrosList.find(r=>r.ejercicioId===exId && r.fecha===today);
+  if(existing){
+    const newSets = [...existing.sets, {reps, peso}];
+    await updateDoc(userDoc('gym_registros', existing.id), {sets: newSets});
+  } else {
+    await addDoc(userCol('gym_registros'), {ejercicioId: exId, fecha: today, sets: [{reps, peso}], createdAt: new Date().toISOString()});
+  }
+  repsInput.value = ''; pesoInput.value = '';
+  showToast('Serie registrada ✓');
+};
+
+// ================== CARDIO ==================
+function calcCardioKcal(met, duracionMin, peso){
+  return Math.round(met * peso * (duracionMin/60));
+}
+
+function renderCardioTab(content){
+  content.innerHTML = `
+    <div class="toolbar">
+      <div></div>
+      <button class="btn-primary" style="background:var(--c-cardio)" onclick="openCardioModal()"><i class="ti ti-plus"></i> Añadir cardio</button>
+    </div>
+    <div id="cardio-list"></div>
+  `;
+  const list = document.getElementById('cardio-list');
+  if(!cardioList.length){
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-run"></i>Sin sesiones de cardio<br><small style="margin-top:6px;display:block">Registra andar, correr, bici...</small></div>`;
+    return;
+  }
+  list.innerHTML = cardioList.map(c=>`
+    <div class="cardio-card">
+      <div class="cardio-info">
+        <span class="cardio-name">${esc(c.nombre)}</span>
+        <span class="cardio-meta">${fmtDate(c.fecha)} · ${c.duracion} min</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="cardio-kcal">${c.kcal} kcal</span>
+        <button class="act-btn" onclick="deleteCardio('${c.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+window.openCardioModal = () => {
+  document.getElementById('c-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('c-duracion').value = '';
+  document.getElementById('cardio-modal-bg').classList.add('open');
+  updateCardioKcal();
+};
+window.closeCardioModal = () => document.getElementById('cardio-modal-bg').classList.remove('open');
+window.updateCardioKcal = () => {
+  const met = parseFloat(document.getElementById('c-actividad').value);
+  const dur = parseFloat(document.getElementById('c-duracion').value) || 0;
+  const kcal = calcCardioKcal(met, dur, pesoCorporal);
+  document.getElementById('cardio-kcal-preview').textContent = kcal + ' kcal';
+};
+window.saveCardio = async () => {
+  const sel = document.getElementById('c-actividad');
+  const met = parseFloat(sel.value);
+  const nombre = sel.options[sel.selectedIndex].text;
+  const duracion = parseFloat(document.getElementById('c-duracion').value);
+  if(!duracion || duracion<=0){ showToast('Indica la duración'); return; }
+  const kcal = calcCardioKcal(met, duracion, pesoCorporal);
+  await addDoc(userCol('gym_cardio'), {
+    nombre, met, duracion,
+    fecha: document.getElementById('c-fecha').value,
+    kcal, pesoUsado: pesoCorporal,
+    createdAt: new Date().toISOString()
+  });
+  closeCardioModal();
+  showToast('Cardio registrado ✓ ' + kcal + ' kcal');
+};
+window.deleteCardio = async (id) => {
+  if(!confirm('¿Eliminar este registro?')) return;
+  await deleteDoc(userDoc('gym_cardio', id));
+  showToast('Eliminado');
+};
+
+// ================== PESO CORPORAL ==================
+let pesoChart = null;
+function renderPesoTab(content){
+  content.innerHTML = `
+    <div class="toolbar">
+      <div></div>
+      <button class="btn-primary" style="background:var(--c-peso)" onclick="openPesoModal()"><i class="ti ti-plus"></i> Registrar peso</button>
+    </div>
+    <div class="weight-card">
+      <div class="chart-card-title">Evolución del peso corporal</div>
+      <div style="position:relative;width:100%;height:240px">
+        <canvas id="pesoChart" role="img" aria-label="Gráfico de evolución del peso corporal a lo largo del tiempo"></canvas>
+      </div>
+    </div>
+    <div id="peso-list"></div>
+  `;
+  const ctx = document.getElementById('pesoChart');
+  if(pesoChart) pesoChart.destroy();
+  const labels = pesoList.map(p=>fmtDate(p.fecha));
+  const data = pesoList.map(p=>p.peso);
+  pesoChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{label:'Peso (kg)', data, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.1)', fill:true, tension:0.2, pointRadius:3, pointBackgroundColor:'#a78bfa'}] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a6080',maxRotation:0,autoSkip:true},grid:{color:'#2a2f45'}},
+        y:{ticks:{color:'#5a6080',callback:v=>v+' kg'},grid:{color:'#2a2f45'}}
+      }
+    }
+  });
+
+  const list = document.getElementById('peso-list');
+  if(!pesoList.length){
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-scale"></i>Sin registros de peso<br><small style="margin-top:6px;display:block">Registra tu peso cuando quieras: semanal, mensual...</small></div>`;
+    return;
+  }
+  const reversed = [...pesoList].reverse();
+  list.innerHTML = reversed.map((p,i)=>{
+    const prev = reversed[i+1];
+    let diffHtml = '';
+    if(prev){
+      const diff = p.peso - prev.peso;
+      diffHtml = `<span class="progress-hint ${diff<0?'progress-up':diff>0?'progress-down':''}" style="margin-left:8px">${diff>0?'+':''}${diff.toFixed(1)}kg</span>`;
+    }
+    return `
+    <div class="cardio-card">
+      <div class="cardio-info">
+        <span class="cardio-name">${p.peso} kg ${diffHtml}</span>
+        <span class="cardio-meta">${fmtDate(p.fecha)}</span>
+      </div>
+      <button class="act-btn" onclick="deletePeso('${p.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+window.openPesoModal = () => {
+  document.getElementById('p-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('p-peso').value = pesoCorporal || '';
+  document.getElementById('peso-modal-bg').classList.add('open');
+};
+window.closePesoModal = () => document.getElementById('peso-modal-bg').classList.remove('open');
+window.savePesoEntry = async () => {
+  const peso = parseFloat(document.getElementById('p-peso').value);
+  if(!peso || peso<=0) return;
+  const fecha = document.getElementById('p-fecha').value;
+  await addDoc(userCol('gym_peso'), {peso, fecha, createdAt:new Date().toISOString()});
+  await setDoc(userDoc('gym_meta','config'), {pesoActual: peso}, {merge:true});
+  closePesoModal();
+  showToast('Peso registrado ✓');
+};
+window.deletePeso = async (id) => {
+  if(!confirm('¿Eliminar este registro de peso?')) return;
+  await deleteDoc(userDoc('gym_peso', id));
+  showToast('Eliminado');
+};
+
+// ================== NUTRICION ==================
+function renderNutricionTab(content){
+  const byDate = {};
+  comidasList.forEach(m=>{
+    if(!byDate[m.fecha]) byDate[m.fecha] = [];
+    byDate[m.fecha].push(m);
+  });
+  const dates = Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+  content.innerHTML = `
+    <div class="toolbar">
+      <div></div>
+      <button class="btn-primary" style="background:var(--c-comida)" onclick="openComidaModal()"><i class="ti ti-plus"></i> Añadir comida</button>
+    </div>
+    <div id="nutricion-days"></div>
+  `;
+  const container = document.getElementById('nutricion-days');
+  if(!dates.length){
+    container.innerHTML = `<div class="empty-state"><i class="ti ti-apple"></i>Sin comidas registradas<br><small style="margin-top:6px;display:block">Añade lo que comes para ver tu resumen diario</small></div>`;
+    return;
+  }
+  container.innerHTML = dates.map(fecha=>{
+    const meals = byDate[fecha];
+    const total = meals.reduce((s,m)=>s+m.kcal,0);
+    return `
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--text2)">${fmtDate(fecha)}</span>
+        <span style="font-size:15px;font-weight:700;color:var(--c-comida-t)">${total} kcal total</span>
+      </div>
+      ${meals.map(m=>`
+        <div class="comida-card">
+          <div class="comida-icon"><i class="ti ti-apple"></i></div>
+          <div class="comida-body">
+            <div class="comida-title">${esc(m.descripcion)}</div>
+            <div class="comida-meta">${esc(m.tipo)}</div>
+          </div>
+          <div class="comida-kcal">${m.kcal} kcal</div>
+          <div class="comida-actions">
+            <button class="act-btn" onclick="deleteComida('${m.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+window.openComidaModal = () => {
+  document.getElementById('m-desc').value = '';
+  document.getElementById('m-kcal').value = '';
+  document.getElementById('m-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('m-tipo').value = 'Comida';
+  document.getElementById('comida-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('m-desc').focus(),60);
+};
+window.closeComidaModal = () => document.getElementById('comida-modal-bg').classList.remove('open');
+window.saveComida = async () => {
+  const descripcion = document.getElementById('m-desc').value.trim();
+  const kcal = parseInt(document.getElementById('m-kcal').value);
+  if(!descripcion || !kcal || kcal<=0){ document.getElementById('m-desc').focus(); return; }
+  await addDoc(userCol('gym_comidas'), {
+    descripcion, kcal,
+    fecha: document.getElementById('m-fecha').value,
+    tipo: document.getElementById('m-tipo').value,
+    createdAt: new Date().toISOString()
+  });
+  closeComidaModal();
+  showToast('Comida añadida ✓');
+};
+window.deleteComida = async (id) => {
+  if(!confirm('¿Eliminar esta comida?')) return;
+  await deleteDoc(userDoc('gym_comidas', id));
+  showToast('Eliminado');
+};
+
+// ================== BALANCE CALORICO ==================
+function dateKeyOf(d){ return d.toISOString().slice(0,10); }
+
+function renderBalanceTab(content){
+  const fechaStr = dateKeyOf(balanceDate);
+  const [y,m,d] = fechaStr.split('-');
+  const labelFecha = `${d}/${m}/${y}`;
+  const isToday = fechaStr === dateKeyOf(new Date());
+
+  const consumidasHoy = comidasList.filter(c=>c.fecha===fechaStr);
+  const totalConsumido = consumidasHoy.reduce((s,c)=>s+c.kcal,0);
+
+  const cardioHoy = cardioList.filter(c=>c.fecha===fechaStr);
+  const kcalCardio = cardioHoy.reduce((s,c)=>s+c.kcal,0);
+
+  const registrosHoy = registrosList.filter(r=>r.fecha===fechaStr);
+  let kcalMusculacion = 0;
+  registrosHoy.forEach(r=>{
+    const tiempoEstimadoHoras = r.sets.length * 1.5 / 60;
+    kcalMusculacion += MET_MUSCULACION * pesoCorporal * tiempoEstimadoHoras;
+  });
+  kcalMusculacion = Math.round(kcalMusculacion);
+
+  const totalQuemado = kcalCardio + kcalMusculacion;
+  const balance = totalConsumido - totalQuemado;
+
+  content.innerHTML = `
+    <div class="date-nav">
+      <button onclick="changeBalanceDate(-1)" aria-label="Día anterior"><i class="ti ti-chevron-left"></i></button>
+      <span class="date-label">${labelFecha}${isToday?' (hoy)':''}</span>
+      <button onclick="changeBalanceDate(1)" aria-label="Día siguiente"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Consumidas</div>
+        <div class="summary-value" style="color:var(--c-comida-t)">${totalConsumido} kcal</div>
+        <div class="summary-sub">${consumidasHoy.length} comida${consumidasHoy.length!==1?'s':''}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Quemadas (cardio)</div>
+        <div class="summary-value" style="color:var(--c-cardio-t)">${kcalCardio} kcal</div>
+        <div class="summary-sub">${cardioHoy.length} sesión${cardioHoy.length!==1?'es':''}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Quemadas (pesas)</div>
+        <div class="summary-value" style="color:var(--c-fuerza-t)">${kcalMusculacion} kcal</div>
+        <div class="summary-sub">${registrosHoy.length} ejercicio${registrosHoy.length!==1?'s':''}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Balance del día</div>
+        <div class="summary-value" style="color:${balance>0?'var(--c-fuerza-t)':'var(--c-quemado-t)'}">${balance>0?'+':''}${balance} kcal</div>
+        <div class="summary-sub">${balance>0?'superávit':'déficit'}</div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;font-size:12px;color:var(--text3);line-height:1.6">
+      <i class="ti ti-info-circle" style="margin-right:4px"></i>
+      Las calorías de musculación se estiman con un MET de ${MET_MUSCULACION} sobre tu peso actual (${pesoCorporal}kg) y el tiempo estimado de la sesión. El cardio usa el MET específico de cada actividad. Son estimaciones aproximadas, no medición exacta.
+    </div>
+  `;
+}
+
+window.changeBalanceDate = (delta) => {
+  balanceDate.setDate(balanceDate.getDate() + delta);
+  renderActiveTab();
+};
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeDayModal(); closeExModal(); closeCardioModal(); closePesoModal(); closeComidaModal(); }
+});
+</script>
+</body>
+</html>
