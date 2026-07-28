@@ -18,6 +18,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   --c-peso:#a78bfa;--c-peso-bg:rgba(167,139,250,.15);--c-peso-t:#c4b5fd;
   --c-comida:#f59e0b;--c-comida-bg:rgba(245,158,11,.15);--c-comida-t:#fcd34d;
   --c-quemado:#22c55e;--c-quemado-bg:rgba(34,197,94,.15);--c-quemado-t:#86efac;
+  --c-pasos:#14b8a6;--c-pasos-bg:rgba(20,184,166,.15);--c-pasos-t:#5eead4;
   --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
 }
 ::-webkit-scrollbar{width:6px}
@@ -53,7 +54,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--text)}
 
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
 .summary-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:5px}
 .summary-value{font-size:18px;font-weight:700;color:var(--text)}
@@ -125,6 +126,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .date-nav button:hover{background:var(--border);color:var(--text)}
 .date-nav .date-label{flex:1;text-align:center;font-weight:600;font-size:14px}
 
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--text3);font-weight:700;margin-bottom:8px;letter-spacing:.03em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px}
+.cal-cell{aspect-ratio:1;border-radius:8px;background:var(--bg2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;transition:all .15s}
+.cal-cell.empty{background:transparent;border:none;cursor:default}
+.cal-cell:hover:not(.empty){border-color:var(--border2)}
+.cal-cell.trained{background:var(--c-fuerza-bg);border-color:var(--c-fuerza)}
+.cal-cell.today{box-shadow:0 0 0 2px var(--c-cardio) inset}
+.cal-cell.future{opacity:.35}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--text2)}
+.cal-cell.trained .cal-day-num{color:var(--text)}
+.cal-icon{font-size:10px;color:var(--c-fuerza-t)}
+.cal-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+.score-big{font-size:44px;font-weight:800;text-align:center;margin:6px 0 2px}
+.score-sub{text-align:center;font-size:12px;color:var(--text3);margin-bottom:18px}
+.score-bar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px}
+.score-bar-track{background:var(--bg3);border-radius:6px;height:6px;margin-bottom:14px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:6px;transition:width .3s}
+.tips-box{background:var(--bg3);border-radius:var(--radius);padding:12px 14px;margin-top:6px}
+.tips-box ul{padding-left:16px;font-size:12px;color:var(--text2);line-height:1.7}
+
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 .modal-bg.open{display:flex}
 .modal{background:var(--bg2);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:22px;width:420px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
@@ -151,7 +175,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 @media(max-width:700px){
   .app{padding:14px}
-  .summary-grid{grid-template-columns:repeat(2,1fr)}
   .day-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
 }
 </style>
@@ -191,6 +214,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('rutina')" id="tabbtn-rutina"><i class="ti ti-barbell"></i> Rutina</button>
+    <button class="tab-btn" onclick="switchTab('calendario')" id="tabbtn-calendario"><i class="ti ti-calendar-event"></i> Calendario</button>
     <button class="tab-btn" onclick="switchTab('cardio')" id="tabbtn-cardio"><i class="ti ti-run"></i> Cardio</button>
     <button class="tab-btn" onclick="switchTab('peso')" id="tabbtn-peso"><i class="ti ti-scale"></i> Peso corporal</button>
     <button class="tab-btn" onclick="switchTab('nutricion')" id="tabbtn-nutricion"><i class="ti ti-apple"></i> Nutrición</button>
@@ -276,6 +300,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- Modal pasos -->
+<div class="modal-bg" id="pasos-modal-bg" onclick="if(event.target===this)closePasosModal()">
+  <div class="modal">
+    <h2>Registrar pasos</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="ps-fecha">
+      </div>
+      <div class="form-group">
+        <label>Pasos</label>
+        <input type="number" id="ps-pasos" placeholder="0" oninput="updatePasosKcal()">
+      </div>
+    </div>
+    <div style="background:var(--c-pasos-bg);border-radius:var(--radius);padding:10px 12px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--c-pasos-t)">Calorías estimadas</span>
+      <strong style="font-size:18px;color:var(--c-pasos-t)" id="pasos-kcal-preview">0 kcal</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePasosModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-pasos)" onclick="savePasos()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal peso -->
 <div class="modal-bg" id="peso-modal-bg" onclick="if(event.target===this)closePesoModal()">
   <div class="modal">
@@ -333,6 +382,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- Modal detalle día calendario -->
+<div class="modal-bg" id="daydetail-modal-bg" onclick="if(event.target===this)closeDayDetailModal()">
+  <div class="modal" style="width:480px">
+    <h2 id="daydetail-title">Día</h2>
+    <div id="daydetail-body"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDayDetailModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal puntuación rutina -->
+<div class="modal-bg" id="score-modal-bg" onclick="if(event.target===this)closeScoreModal()">
+  <div class="modal" style="width:440px">
+    <h2><i class="ti ti-star" style="margin-right:4px"></i> Puntuación de tu rutina</h2>
+    <div id="score-body"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeScoreModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -355,15 +426,17 @@ const db = getFirestore(app);
 
 const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const MET_MUSCULACION = 5.0;
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let currentUser = null;
 let activeTab = 'rutina';
 let pesoCorporal = 75;
-let diasRutina = {}, ejerciciosList = [], registrosList = [], cardioList = [], pesoList = [], comidasList = [];
-let unsubDias=null, unsubEj=null, unsubReg=null, unsubCardio=null, unsubPeso=null, unsubComida=null, unsubConfig=null;
+let diasRutina = {}, ejerciciosList = [], registrosList = [], cardioList = [], pesoList = [], comidasList = [], pasosList = [];
+let unsubDias=null, unsubEj=null, unsubReg=null, unsubCardio=null, unsubPeso=null, unsubComida=null, unsubConfig=null, unsubPasos=null;
 let navDiaId = null;
 let editId = null;
 let balanceDate = new Date();
+let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){
@@ -377,7 +450,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig].forEach(u=>u&&u());
+  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig,unsubPasos].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -402,7 +475,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig].forEach(u=>u&&u());
+  [unsubDias,unsubEj,unsubReg,unsubCardio,unsubPeso,unsubComida,unsubConfig,unsubPasos].forEach(u=>u&&u());
 
   unsubConfig = onSnapshot(userDoc('gym_meta','config'), snap => {
     pesoCorporal = snap.exists() ? (snap.data().pesoActual || 75) : 75;
@@ -424,13 +497,13 @@ function subscribeData(){
   unsubReg = onSnapshot(userCol('gym_registros'), snap => {
     registrosList = snap.docs.map(d=>({id:d.id,...d.data()}));
     registrosList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-    if(activeTab==='rutina' && navDiaId) renderActiveTab();
+    if((activeTab==='rutina' && navDiaId) || activeTab==='calendario') renderActiveTab();
   });
 
   unsubCardio = onSnapshot(userCol('gym_cardio'), snap => {
     cardioList = snap.docs.map(d=>({id:d.id,...d.data()}));
     cardioList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-    if(activeTab==='cardio' || activeTab==='balance') renderActiveTab();
+    if(activeTab==='cardio' || activeTab==='balance' || activeTab==='calendario') renderActiveTab();
   });
 
   unsubPeso = onSnapshot(userCol('gym_peso'), snap => {
@@ -444,6 +517,12 @@ function subscribeData(){
     comidasList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
     if(activeTab==='nutricion' || activeTab==='balance') renderActiveTab();
   });
+
+  unsubPasos = onSnapshot(userCol('gym_pasos'), snap => {
+    pasosList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    pasosList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    if(activeTab==='cardio' || activeTab==='balance' || activeTab==='calendario') renderActiveTab();
+  });
 }
 
 window.saveConfigPeso = async () => {
@@ -455,7 +534,7 @@ window.saveConfigPeso = async () => {
 
 window.switchTab = (tab) => {
   activeTab = tab; navDiaId = null;
-  ['rutina','cardio','peso','nutricion','balance'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
+  ['rutina','calendario','cardio','peso','nutricion','balance'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
   renderActiveTab();
 };
 
@@ -464,7 +543,8 @@ function renderActiveTab(){
   if(activeTab === 'rutina'){
     if(!navDiaId) renderDiasLevel(content);
     else renderEjerciciosLevel(content);
-  } else if(activeTab === 'cardio') renderCardioTab(content);
+  } else if(activeTab === 'calendario') renderCalendarioTab(content);
+  else if(activeTab === 'cardio') renderCardioTab(content);
   else if(activeTab === 'peso') renderPesoTab(content);
   else if(activeTab === 'nutricion') renderNutricionTab(content);
   else if(activeTab === 'balance') renderBalanceTab(content);
@@ -472,7 +552,12 @@ function renderActiveTab(){
 
 // ================== RUTINA: DIAS ==================
 function renderDiasLevel(content){
-  content.innerHTML = `<div class="day-grid" id="days-grid"></div>`;
+  content.innerHTML = `
+    <div class="toolbar">
+      <div style="font-size:12px;color:var(--text3)">Configura cada día pulsando sobre él</div>
+      <button class="btn-primary" style="background:var(--c-fuerza)" onclick="openScoreModal()"><i class="ti ti-star"></i> Puntuar mi rutina</button>
+    </div>
+    <div class="day-grid" id="days-grid"></div>`;
   const grid = document.getElementById('days-grid');
   grid.innerHTML = DIAS.map(dia=>{
     const d = diasRutina[dia];
@@ -619,9 +704,207 @@ window.addQuickSet = async (exId) => {
   showToast('Serie registrada ✓');
 };
 
+// ================== CALENDARIO ==================
+function renderCalendarioTab(content){
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  const daysInMonth = lastDay.getDate();
+  let startWeekday = firstDay.getDay();
+  startWeekday = (startWeekday+6)%7; // Lunes=0
+
+  const trainedDates = new Set(registrosList.map(r=>r.fecha));
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  let daysHtml = '';
+  for(let i=0;i<startWeekday;i++) daysHtml += `<div class="cal-cell empty"></div>`;
+  let trainedCount = 0;
+  for(let d=1; d<=daysInMonth; d++){
+    const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const trained = trainedDates.has(fechaStr);
+    const isToday = fechaStr===todayStr;
+    const isFuture = fechaStr > todayStr;
+    if(trained) trainedCount++;
+    daysHtml += `<div class="cal-cell ${trained?'trained':''} ${isFuture?'future':''} ${isToday?'today':''}" onclick="openDayDetail('${fechaStr}')">
+      <span class="cal-day-num">${d}</span>
+      ${trained?'<i class="ti ti-barbell cal-icon"></i>':''}
+    </div>`;
+  }
+
+  const diasTranscurridos = Array.from({length:daysInMonth},(_,i)=>`${year}-${String(month+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`).filter(f=>f<=todayStr).length;
+
+  content.innerHTML = `
+    <div class="date-nav">
+      <button onclick="changeCalMonth(-1)" aria-label="Mes anterior"><i class="ti ti-chevron-left"></i></button>
+      <span class="date-label">${MONTH_NAMES[month]} ${year}</span>
+      <button onclick="changeCalMonth(1)" aria-label="Mes siguiente"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Días entrenados</div>
+        <div class="summary-value" style="color:var(--c-fuerza-t)">${trainedCount}</div>
+        <div class="summary-sub">de ${diasTranscurridos} días transcurridos</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Constancia</div>
+        <div class="summary-value">${diasTranscurridos?Math.round(trainedCount/diasTranscurridos*100):0}%</div>
+        <div class="summary-sub">del mes hasta hoy</div>
+      </div>
+    </div>
+    <div class="cal-legend">
+      <span class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--c-fuerza-bg);border:1px solid var(--c-fuerza)"></span> Entrenaste</span>
+      <span class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--bg2);border:1px solid var(--border)"></span> Sin entreno</span>
+    </div>
+    <div class="cal-weekdays">
+      <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+    </div>
+    <div class="cal-grid">${daysHtml}</div>
+  `;
+}
+
+window.changeCalMonth = (delta) => {
+  calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth()+delta, 1);
+  renderActiveTab();
+};
+
+window.openDayDetail = (fechaStr) => {
+  const regs = registrosList.filter(r=>r.fecha===fechaStr);
+  const cardioHoy = cardioList.filter(c=>c.fecha===fechaStr);
+  const pasosHoy = pasosList.find(p=>p.fecha===fechaStr);
+
+  document.getElementById('daydetail-title').textContent = fmtDate(fechaStr);
+  const body = document.getElementById('daydetail-body');
+
+  if(!regs.length && !cardioHoy.length && !pasosHoy){
+    body.innerHTML = `<div class="empty-state" style="padding:30px 0"><i class="ti ti-moon"></i>Día de descanso<br><small style="margin-top:6px;display:block">No hay entrenos, cardio ni pasos registrados</small></div>`;
+  } else {
+    let html = '';
+    if(regs.length){
+      html += `<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Ejercicios realizados</div>`;
+      regs.forEach(r=>{
+        const ex = ejerciciosList.find(e=>e.id===r.ejercicioId);
+        const nombre = ex ? ex.nombre : 'Ejercicio eliminado';
+        html += `<div class="exercise-card" style="margin-bottom:8px">
+          <div class="exercise-name" style="margin-bottom:8px">${esc(nombre)}</div>
+          <table class="sets-table">
+            <tr><th>Serie</th><th>Reps</th><th>Peso</th></tr>
+            ${r.sets.map((s,i)=>`<tr><td>${i+1}</td><td>${s.reps}</td><td>${s.peso}kg</td></tr>`).join('')}
+          </table>
+        </div>`;
+      });
+    }
+    if(cardioHoy.length){
+      html += `<div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 8px">Cardio</div>`;
+      cardioHoy.forEach(c=>{
+        html += `<div class="cardio-card"><div class="cardio-info"><span class="cardio-name">${esc(c.nombre)}</span><span class="cardio-meta">${c.duracion} min</span></div><span class="cardio-kcal">${c.kcal} kcal</span></div>`;
+      });
+    }
+    if(pasosHoy){
+      html += `<div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 8px">Pasos</div>
+        <div class="cardio-card"><div class="cardio-info"><span class="cardio-name">${pasosHoy.pasos.toLocaleString('es-ES')} pasos</span></div><span class="cardio-kcal" style="color:var(--c-pasos-t)">${pasosHoy.kcal} kcal</span></div>`;
+    }
+    body.innerHTML = html;
+  }
+  document.getElementById('daydetail-modal-bg').classList.add('open');
+};
+window.closeDayDetailModal = () => document.getElementById('daydetail-modal-bg').classList.remove('open');
+
+// ================== PUNTUACION DE RUTINA ==================
+function calcularPuntuacionRutina(){
+  const diasConfig = Object.values(diasRutina);
+  const diasEntreno = diasConfig.filter(d=>d.focus && !d.focus.toLowerCase().includes('descanso'));
+  const numEntreno = diasEntreno.length;
+  const numDescanso = 7 - numEntreno;
+  const tips = [];
+  let score = 0;
+
+  // Frecuencia (30 pts)
+  let ptsFrecuencia;
+  if(numEntreno>=3 && numEntreno<=5){ ptsFrecuencia=30; }
+  else if(numEntreno===2 || numEntreno===6){
+    ptsFrecuencia=20;
+    tips.push(numEntreno===2 ? 'Con solo 2 días de entreno el progreso será más lento. Intenta llegar a 3-4 si puedes.' : 'Entrenar 6 días es mucho volumen semanal, vigila la recuperación.');
+  }
+  else if(numEntreno===1 || numEntreno===7){
+    ptsFrecuencia=10;
+    tips.push(numEntreno===7 ? 'Entrenar los 7 días sin descanso aumenta el riesgo de sobreentrenamiento y lesiones.' : 'Con 1 solo día de entreno es difícil generar progreso constante.');
+  }
+  else { ptsFrecuencia=0; tips.push('Configura al menos algunos días de entrenamiento en tu rutina semanal.'); }
+  score += ptsFrecuencia;
+
+  // Descanso (20 pts)
+  let ptsDescanso;
+  if(numDescanso>=1 && numDescanso<=4){ ptsDescanso=20; }
+  else if(numDescanso===0){ ptsDescanso=5; tips.push('No tienes ningún día de descanso: el cuerpo necesita recuperarse entre sesiones.'); }
+  else { ptsDescanso=15; }
+  score += ptsDescanso;
+
+  // Volumen por día (25 pts)
+  const volumenes = diasEntreno.map(d=>ejerciciosList.filter(e=>e.diaId===d.id).length);
+  const avgVol = volumenes.length ? volumenes.reduce((a,b)=>a+b,0)/volumenes.length : 0;
+  let ptsVolumen;
+  if(avgVol>=3 && avgVol<=6){ ptsVolumen=25; }
+  else if(avgVol>6 && avgVol<=8){ ptsVolumen=15; tips.push('Tienes muchos ejercicios por sesión (media '+avgVol.toFixed(1)+'), cuidado con sesiones demasiado largas.'); }
+  else if(avgVol>0 && avgVol<3){ ptsVolumen=15; tips.push('Tus días de entreno tienen pocos ejercicios (media '+avgVol.toFixed(1)+'). Añade alguno más por sesión.'); }
+  else { ptsVolumen=5; tips.push('Añade ejercicios a tus días de entreno para poder valorar el volumen.'); }
+  score += ptsVolumen;
+
+  // Equilibrio de grupos musculares (25 pts)
+  const categorias = {
+    'Pecho': /pecho|pectoral/,
+    'Espalda': /espalda|dorsal/,
+    'Pierna': /pierna|cuádriceps|cuadriceps|femoral|gluteo|glúteo/,
+    'Hombro': /hombro|deltoid/,
+    'Brazo': /brazo|bicep|tricep/,
+    'Core': /core|abdomen|abs\b/
+  };
+  const focusText = diasEntreno.map(d=>d.focus.toLowerCase()).join(' ');
+  let cubiertos = 0;
+  const faltantes = [];
+  for(const [nombre, regex] of Object.entries(categorias)){
+    if(regex.test(focusText)) cubiertos++;
+    else faltantes.push(nombre);
+  }
+  const totalCategorias = Object.keys(categorias).length;
+  const ptsEquilibrio = Math.round((cubiertos/totalCategorias)*25);
+  score += ptsEquilibrio;
+  if(faltantes.length && numEntreno>0) tips.push('No parece que trabajes: '+faltantes.join(', ')+'. Revisa si te falta cubrir esos grupos.');
+
+  if(!tips.length) tips.push('¡Tu rutina está muy bien equilibrada! Sigue así.');
+
+  return {
+    score: Math.round(score), ptsFrecuencia, ptsDescanso, ptsVolumen, ptsEquilibrio,
+    tips, numEntreno, numDescanso, avgVol: avgVol.toFixed(1), cubiertos, totalCategorias
+  };
+}
+
+window.openScoreModal = () => {
+  const r = calcularPuntuacionRutina();
+  const color = r.score>=75 ? 'var(--c-quemado-t)' : r.score>=50 ? 'var(--c-comida-t)' : 'var(--c-danger)';
+  const barra = (label, pts, max, colorVar) => `
+    <div class="score-bar-row"><span>${label}</span><span>${pts}/${max}</span></div>
+    <div class="score-bar-track"><div class="score-bar-fill" style="width:${(pts/max*100)}%;background:${colorVar}"></div></div>`;
+
+  document.getElementById('score-body').innerHTML = `
+    <div class="score-big" style="color:${color}">${r.score}<span style="font-size:20px;color:var(--text3)">/100</span></div>
+    <div class="score-sub">${r.numEntreno} día${r.numEntreno!==1?'s':''} de entreno · ${r.numDescanso} de descanso · media ${r.avgVol} ejercicios/día</div>
+    ${barra('Frecuencia semanal', r.ptsFrecuencia, 30, 'var(--c-fuerza)')}
+    ${barra('Descanso', r.ptsDescanso, 20, 'var(--c-cardio)')}
+    ${barra('Volumen por sesión', r.ptsVolumen, 25, 'var(--c-peso)')}
+    ${barra('Equilibrio muscular ('+r.cubiertos+'/'+r.totalCategorias+')', r.ptsEquilibrio, 25, 'var(--c-comida)')}
+    <div class="tips-box"><ul>${r.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>
+  `;
+  document.getElementById('score-modal-bg').classList.add('open');
+};
+window.closeScoreModal = () => document.getElementById('score-modal-bg').classList.remove('open');
+
 // ================== CARDIO ==================
 function calcCardioKcal(met, duracionMin, peso){
   return Math.round(met * peso * (duracionMin/60));
+}
+function calcPasosKcal(pasos, peso){
+  return Math.round(pasos * 0.00057 * peso);
 }
 
 function renderCardioTab(content){
@@ -631,23 +914,47 @@ function renderCardioTab(content){
       <button class="btn-primary" style="background:var(--c-cardio)" onclick="openCardioModal()"><i class="ti ti-plus"></i> Añadir cardio</button>
     </div>
     <div id="cardio-list"></div>
+    <div style="margin-top:28px">
+      <div class="toolbar">
+        <div class="chart-card-title" style="margin-bottom:0">Pasos diarios</div>
+        <button class="btn-primary" style="background:var(--c-pasos)" onclick="openPasosModal()"><i class="ti ti-shoe"></i> Añadir pasos</button>
+      </div>
+      <div id="pasos-list"></div>
+    </div>
   `;
   const list = document.getElementById('cardio-list');
   if(!cardioList.length){
     list.innerHTML = `<div class="empty-state"><i class="ti ti-run"></i>Sin sesiones de cardio<br><small style="margin-top:6px;display:block">Registra andar, correr, bici...</small></div>`;
-    return;
+  } else {
+    list.innerHTML = cardioList.map(c=>`
+      <div class="cardio-card">
+        <div class="cardio-info">
+          <span class="cardio-name">${esc(c.nombre)}</span>
+          <span class="cardio-meta">${fmtDate(c.fecha)} · ${c.duracion} min</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cardio-kcal">${c.kcal} kcal</span>
+          <button class="act-btn" onclick="deleteCardio('${c.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`).join('');
   }
-  list.innerHTML = cardioList.map(c=>`
-    <div class="cardio-card">
-      <div class="cardio-info">
-        <span class="cardio-name">${esc(c.nombre)}</span>
-        <span class="cardio-meta">${fmtDate(c.fecha)} · ${c.duracion} min</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <span class="cardio-kcal">${c.kcal} kcal</span>
-        <button class="act-btn" onclick="deleteCardio('${c.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-      </div>
-    </div>`).join('');
+
+  const pList = document.getElementById('pasos-list');
+  if(!pasosList.length){
+    pList.innerHTML = `<div class="empty-state"><i class="ti ti-shoe"></i>Sin pasos registrados<br><small style="margin-top:6px;display:block">Añade los pasos que andas cada día</small></div>`;
+  } else {
+    pList.innerHTML = pasosList.map(p=>`
+      <div class="cardio-card">
+        <div class="cardio-info">
+          <span class="cardio-name">${p.pasos.toLocaleString('es-ES')} pasos</span>
+          <span class="cardio-meta">${fmtDate(p.fecha)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cardio-kcal" style="color:var(--c-pasos-t)">${p.kcal} kcal</span>
+          <button class="act-btn" onclick="deletePasos('${p.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`).join('');
+  }
 }
 
 window.openCardioModal = () => {
@@ -682,6 +989,37 @@ window.saveCardio = async () => {
 window.deleteCardio = async (id) => {
   if(!confirm('¿Eliminar este registro?')) return;
   await deleteDoc(userDoc('gym_cardio', id));
+  showToast('Eliminado');
+};
+
+window.openPasosModal = () => {
+  document.getElementById('ps-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ps-pasos').value = '';
+  document.getElementById('pasos-kcal-preview').textContent = '0 kcal';
+  document.getElementById('pasos-modal-bg').classList.add('open');
+};
+window.closePasosModal = () => document.getElementById('pasos-modal-bg').classList.remove('open');
+window.updatePasosKcal = () => {
+  const pasos = parseInt(document.getElementById('ps-pasos').value) || 0;
+  document.getElementById('pasos-kcal-preview').textContent = calcPasosKcal(pasos, pesoCorporal) + ' kcal';
+};
+window.savePasos = async () => {
+  const pasos = parseInt(document.getElementById('ps-pasos').value);
+  if(!pasos || pasos<=0){ showToast('Indica los pasos'); return; }
+  const fecha = document.getElementById('ps-fecha').value;
+  const kcal = calcPasosKcal(pasos, pesoCorporal);
+  const existing = pasosList.find(p=>p.fecha===fecha);
+  if(existing){
+    await updateDoc(userDoc('gym_pasos', existing.id), {pasos, kcal, pesoUsado: pesoCorporal});
+  } else {
+    await addDoc(userCol('gym_pasos'), {pasos, fecha, kcal, pesoUsado: pesoCorporal, createdAt: new Date().toISOString()});
+  }
+  closePasosModal();
+  showToast('Pasos registrados ✓ ' + kcal + ' kcal');
+};
+window.deletePasos = async (id) => {
+  if(!confirm('¿Eliminar este registro de pasos?')) return;
+  await deleteDoc(userDoc('gym_pasos', id));
   showToast('Eliminado');
 };
 
@@ -852,6 +1190,9 @@ function renderBalanceTab(content){
   const cardioHoy = cardioList.filter(c=>c.fecha===fechaStr);
   const kcalCardio = cardioHoy.reduce((s,c)=>s+c.kcal,0);
 
+  const pasosHoy = pasosList.find(p=>p.fecha===fechaStr);
+  const kcalPasos = pasosHoy ? pasosHoy.kcal : 0;
+
   const registrosHoy = registrosList.filter(r=>r.fecha===fechaStr);
   let kcalMusculacion = 0;
   registrosHoy.forEach(r=>{
@@ -860,7 +1201,7 @@ function renderBalanceTab(content){
   });
   kcalMusculacion = Math.round(kcalMusculacion);
 
-  const totalQuemado = kcalCardio + kcalMusculacion;
+  const totalQuemado = kcalCardio + kcalMusculacion + kcalPasos;
   const balance = totalConsumido - totalQuemado;
 
   content.innerHTML = `
@@ -886,6 +1227,11 @@ function renderBalanceTab(content){
         <div class="summary-sub">${registrosHoy.length} ejercicio${registrosHoy.length!==1?'s':''}</div>
       </div>
       <div class="summary-card">
+        <div class="summary-label">Quemadas (pasos)</div>
+        <div class="summary-value" style="color:var(--c-pasos-t)">${kcalPasos} kcal</div>
+        <div class="summary-sub">${pasosHoy?pasosHoy.pasos.toLocaleString('es-ES')+' pasos':'sin registrar'}</div>
+      </div>
+      <div class="summary-card">
         <div class="summary-label">Balance del día</div>
         <div class="summary-value" style="color:${balance>0?'var(--c-fuerza-t)':'var(--c-quemado-t)'}">${balance>0?'+':''}${balance} kcal</div>
         <div class="summary-sub">${balance>0?'superávit':'déficit'}</div>
@@ -893,7 +1239,7 @@ function renderBalanceTab(content){
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;font-size:12px;color:var(--text3);line-height:1.6">
       <i class="ti ti-info-circle" style="margin-right:4px"></i>
-      Las calorías de musculación se estiman con un MET de ${MET_MUSCULACION} sobre tu peso actual (${pesoCorporal}kg) y el tiempo estimado de la sesión. El cardio usa el MET específico de cada actividad. Son estimaciones aproximadas, no medición exacta.
+      Las calorías de musculación se estiman con un MET de ${MET_MUSCULACION} sobre tu peso actual (${pesoCorporal}kg) y el tiempo estimado de la sesión. El cardio usa el MET específico de cada actividad y los pasos una estimación proporcional a tu peso. Son estimaciones aproximadas, no medición exacta.
     </div>
   `;
 }
@@ -904,7 +1250,7 @@ window.changeBalanceDate = (delta) => {
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeDayModal(); closeExModal(); closeCardioModal(); closePesoModal(); closeComidaModal(); }
+  if(e.key==='Escape'){ closeDayModal(); closeExModal(); closeCardioModal(); closePesoModal(); closeComidaModal(); closePasosModal(); closeDayDetailModal(); closeScoreModal(); }
 });
 </script>
 </body>
