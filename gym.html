@@ -84,6 +84,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .breadcrumb-item.current{color:var(--text);font-weight:600;cursor:default}
 .breadcrumb-sep{color:var(--text3);font-size:11px}
 
+.mode-switch{display:flex;gap:6px;margin-left:auto}
+.mode-switch-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:all .15s}
+.mode-switch-btn:hover{background:var(--border);color:var(--text)}
+.mode-switch-btn.active{background:var(--c-fuerza);color:#fff;border-color:var(--c-fuerza)}
+
+.day-options-grid{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.day-option-btn{display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;text-align:left;font-family:inherit;color:var(--text);transition:all .15s;width:100%}
+.day-option-btn:hover{border-color:var(--border2);background:var(--border)}
+.day-option-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.day-option-title{font-size:14px;font-weight:700}
+.day-option-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+.focus-edit-row{display:flex;gap:8px;margin-bottom:18px}
+.focus-edit-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.focus-edit-row button{background:var(--c-fuerza);color:#fff;border:none;border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;white-space:nowrap}
+
+.mini-ex-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mini-ex-name{font-size:13px;font-weight:600;color:var(--text)}
+
+.catalog-group{margin-bottom:16px}
+.catalog-group-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.catalog-chips{display:flex;flex-wrap:wrap;gap:6px}
+.catalog-chip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:all .15s}
+.catalog-chip:hover{border-color:var(--border2);color:var(--text)}
+.catalog-chip.added{background:var(--c-quemado-bg);border-color:var(--c-quemado);color:var(--c-quemado-t);cursor:default}
+
 .exercise-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px}
 .exercise-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .exercise-name{font-size:14px;font-weight:600;color:var(--text)}
@@ -225,21 +251,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 </div>
 
-<!-- Modal dia rutina -->
-<div class="modal-bg" id="day-modal-bg" onclick="if(event.target===this)closeDayModal()">
+<!-- Modal opciones de día (ver / modificar) -->
+<div class="modal-bg" id="day-options-bg" onclick="if(event.target===this)closeDayOptionsModal()">
   <div class="modal">
-    <h2 id="day-modal-title">Configurar día</h2>
-    <div class="form-group">
-      <label>Día de la semana</label>
-      <select id="dy-dia" disabled></select>
-    </div>
-    <div class="form-group">
-      <label>Grupo muscular / enfoque</label>
-      <input type="text" id="dy-focus" placeholder="Ej: Pecho y tríceps, Descanso...">
+    <h2 id="day-options-title">Día</h2>
+    <div class="day-options-grid">
+      <button class="day-option-btn" onclick="chooseVerRutina()">
+        <div class="day-option-icon" style="background:var(--c-cardio-bg);color:var(--c-cardio-t)"><i class="ti ti-eye"></i></div>
+        <div>
+          <div class="day-option-title">Ver rutina</div>
+          <div class="day-option-sub">Consulta los ejercicios y registra series de hoy</div>
+        </div>
+      </button>
+      <button class="day-option-btn" onclick="chooseModificarRutina()">
+        <div class="day-option-icon" style="background:var(--c-fuerza-bg);color:var(--c-fuerza-t)"><i class="ti ti-edit"></i></div>
+        <div>
+          <div class="day-option-title">Modificar rutina</div>
+          <div class="day-option-sub">Añade o quita ejercicios de este día</div>
+        </div>
+      </button>
     </div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeDayModal()">Cancelar</button>
-      <button class="btn-save" style="background:var(--c-fuerza)" onclick="saveDay()">Guardar</button>
+      <button class="btn-cancel" onclick="closeDayOptionsModal()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -428,13 +461,23 @@ const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Doming
 const MET_MUSCULACION = 5.0;
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+const EXERCISE_CATALOG = {
+  'Pecho': ['Press banca','Press inclinado con mancuernas','Press declinado','Aperturas con mancuernas','Fondos en paralelas','Cruce de poleas'],
+  'Espalda': ['Dominadas','Remo con barra','Remo con mancuerna','Jalón al pecho','Remo en polea baja','Peso muerto','Pull-over'],
+  'Pierna': ['Sentadilla','Prensa de piernas','Zancadas','Peso muerto rumano','Extensión de cuádriceps','Curl femoral','Elevación de gemelos','Hip thrust'],
+  'Hombro': ['Press militar','Elevaciones laterales','Elevaciones frontales','Pájaros (posterior)','Press Arnold','Remo al mentón'],
+  'Brazo': ['Curl de bíceps con barra','Curl martillo','Curl concentrado','Extensión de tríceps en polea','Press francés','Fondos de tríceps'],
+  'Core': ['Plancha','Crunch abdominal','Elevación de piernas','Rueda abdominal','Russian twist','Plancha lateral']
+};
+
 let currentUser = null;
 let activeTab = 'rutina';
 let pesoCorporal = 75;
 let diasRutina = {}, ejerciciosList = [], registrosList = [], cardioList = [], pesoList = [], comidasList = [], pasosList = [];
 let unsubDias=null, unsubEj=null, unsubReg=null, unsubCardio=null, unsubPeso=null, unsubComida=null, unsubConfig=null, unsubPasos=null;
 let navDiaId = null;
-let editId = null;
+let navMode = null; // 'ver' | 'editar'
+let selectedDiaKey = null;
 let balanceDate = new Date();
 let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
@@ -533,7 +576,7 @@ window.saveConfigPeso = async () => {
 };
 
 window.switchTab = (tab) => {
-  activeTab = tab; navDiaId = null;
+  activeTab = tab; navDiaId = null; navMode = null;
   ['rutina','calendario','cardio','peso','nutricion','balance'].forEach(t=>document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab));
   renderActiveTab();
 };
@@ -554,7 +597,7 @@ function renderActiveTab(){
 function renderDiasLevel(content){
   content.innerHTML = `
     <div class="toolbar">
-      <div style="font-size:12px;color:var(--text3)">Configura cada día pulsando sobre él</div>
+      <div style="font-size:12px;color:var(--text3)">Cada día tiene su propia rutina. Pulsa un día para ver o modificarla</div>
       <button class="btn-primary" style="background:var(--c-fuerza)" onclick="openScoreModal()"><i class="ti ti-star"></i> Puntuar mi rutina</button>
     </div>
     <div class="day-grid" id="days-grid"></div>`;
@@ -562,64 +605,92 @@ function renderDiasLevel(content){
   grid.innerHTML = DIAS.map(dia=>{
     const d = diasRutina[dia];
     const focus = d ? d.focus : '';
-    const isRest = focus.toLowerCase().includes('descanso') || !focus;
+    const isRest = focus.toLowerCase().includes('descanso');
     const nEx = d ? ejerciciosList.filter(e=>e.diaId===d.id).length : 0;
     return `
-    <div class="day-card ${isRest?'rest':''}" onclick="${d?`openDia('${d.id}')`:`openDayModal('${dia}')`}">
+    <div class="day-card ${isRest?'rest':''}" onclick="openDayOptions('${dia}')">
       <div class="day-actions">
-        <button class="card-act-btn" onclick="event.stopPropagation();openDayModal('${dia}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" onclick="event.stopPropagation();quickModificar('${dia}')" aria-label="Modificar"><i class="ti ti-edit"></i></button>
       </div>
       <div class="day-name">${dia}</div>
-      <div class="day-focus">${focus ? esc(focus) : 'Sin configurar'}</div>
-      ${d && !isRest ? `<div class="day-meta">${nEx} ejercicio${nEx!==1?'s':''}</div>` : ''}
+      <div class="day-focus">${focus ? esc(focus) : (nEx ? nEx+' ejercicio'+(nEx!==1?'s':'') : 'Sin configurar')}</div>
+      ${d && !isRest && focus ? `<div class="day-meta">${nEx} ejercicio${nEx!==1?'s':''}</div>` : ''}
     </div>`;
   }).join('');
 }
 
-window.openDia = (diaDocId) => { navDiaId = diaDocId; renderActiveTab(); };
-window.backToDias = () => { navDiaId = null; renderActiveTab(); };
+window.backToDias = () => { navDiaId = null; navMode = null; renderActiveTab(); };
 
-window.openDayModal = (dia) => {
-  editId = dia;
-  document.getElementById('day-modal-title').textContent = 'Configurar ' + dia;
-  const sel = document.getElementById('dy-dia');
-  sel.innerHTML = `<option>${dia}</option>`;
-  document.getElementById('dy-focus').value = diasRutina[dia] ? diasRutina[dia].focus : '';
-  document.getElementById('day-modal-bg').classList.add('open');
-  setTimeout(()=>document.getElementById('dy-focus').focus(),60);
+window.openDayOptions = (dia) => {
+  selectedDiaKey = dia;
+  const d = diasRutina[dia];
+  document.getElementById('day-options-title').textContent = dia + (d && d.focus ? ' — '+d.focus : '');
+  document.getElementById('day-options-bg').classList.add('open');
 };
-window.closeDayModal = () => document.getElementById('day-modal-bg').classList.remove('open');
-window.saveDay = async () => {
-  const dia = editId;
-  const focus = document.getElementById('dy-focus').value.trim();
+window.closeDayOptionsModal = () => document.getElementById('day-options-bg').classList.remove('open');
+
+async function ensureDiaDoc(dia){
   const existing = diasRutina[dia];
-  if(existing) await updateDoc(userDoc('gym_dias', existing.id), {focus});
-  else await addDoc(userCol('gym_dias'), {dia, focus, createdAt:new Date().toISOString()});
-  closeDayModal();
-  showToast('Día actualizado ✓');
+  if(existing) return existing.id;
+  const ref = await addDoc(userCol('gym_dias'), {dia, focus:'', createdAt:new Date().toISOString()});
+  diasRutina[dia] = {id:ref.id, dia, focus:''}; // optimista, hasta que llegue el snapshot
+  return ref.id;
+}
+
+window.chooseVerRutina = async () => {
+  const dia = selectedDiaKey;
+  const d = diasRutina[dia];
+  closeDayOptionsModal();
+  if(!d){ showToast('Esta rutina aún no tiene ejercicios. Pulsa "Modificar rutina" para empezar.'); return; }
+  navDiaId = d.id; navMode = 'ver';
+  renderActiveTab();
 };
 
-// ================== RUTINA: EJERCICIOS ==================
+window.chooseModificarRutina = async () => {
+  const dia = selectedDiaKey;
+  const id = await ensureDiaDoc(dia);
+  closeDayOptionsModal();
+  navDiaId = id; navMode = 'editar';
+  renderActiveTab();
+};
+
+window.quickModificar = async (dia) => {
+  selectedDiaKey = dia;
+  await chooseModificarRutina();
+};
+
+window.switchNavMode = (mode) => { navMode = mode; renderActiveTab(); };
+
+// ================== RUTINA: EJERCICIOS (ver / modificar) ==================
 function renderEjerciciosLevel(content){
   const diaEntry = Object.values(diasRutina).find(d=>d.id===navDiaId);
-  if(!diaEntry){ navDiaId=null; renderActiveTab(); return; }
+  if(!diaEntry){ navDiaId=null; navMode=null; renderActiveTab(); return; }
   const exs = ejerciciosList.filter(e=>e.diaId===navDiaId);
+  if(navMode === 'editar') renderModificarRutina(content, diaEntry, exs);
+  else renderVerRutina(content, diaEntry, exs);
+}
 
-  content.innerHTML = `
+function breadcrumbHtml(diaEntry, mode){
+  return `
     <div class="breadcrumb">
       <span class="breadcrumb-item" onclick="backToDias()"><i class="ti ti-calendar"></i> Rutina</span>
       <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item current">${esc(diaEntry.dia)} — ${esc(diaEntry.focus||'')}</span>
-    </div>
-    <div class="toolbar">
-      <div></div>
-      <button class="btn-primary" style="background:var(--c-fuerza)" onclick="openExModal()"><i class="ti ti-plus"></i> Nuevo ejercicio</button>
-    </div>
+      <span class="breadcrumb-item current">${esc(diaEntry.dia)}${diaEntry.focus ? ' — '+esc(diaEntry.focus) : ''}</span>
+      <div class="mode-switch">
+        <button class="mode-switch-btn ${mode==='ver'?'active':''}" onclick="switchNavMode('ver')"><i class="ti ti-eye"></i> Ver</button>
+        <button class="mode-switch-btn ${mode==='editar'?'active':''}" onclick="switchNavMode('editar')"><i class="ti ti-edit"></i> Modificar</button>
+      </div>
+    </div>`;
+}
+
+function renderVerRutina(content, diaEntry, exs){
+  content.innerHTML = `
+    ${breadcrumbHtml(diaEntry, 'ver')}
     <div id="exercises-list"></div>
   `;
   const list = document.getElementById('exercises-list');
   if(!exs.length){
-    list.innerHTML = `<div class="empty-state"><i class="ti ti-barbell"></i>Sin ejercicios en este día<br><small style="margin-top:6px;display:block">Añade el primer ejercicio de la rutina</small></div>`;
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-barbell"></i>Sin ejercicios en este día todavía<br><small style="margin-top:6px;display:block">Pulsa "Modificar" para añadir ejercicios de la rutina</small></div>`;
     return;
   }
   list.innerHTML = exs.map(ex=>{
@@ -639,9 +710,6 @@ function renderEjerciciosLevel(content){
     <div class="exercise-card">
       <div class="exercise-top">
         <span class="exercise-name">${esc(ex.nombre)}</span>
-        <div class="exercise-actions">
-          <button class="act-btn" onclick="deleteEx('${ex.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-        </div>
       </div>
       ${lastReg ? `
         <table class="sets-table">
@@ -659,6 +727,60 @@ function renderEjerciciosLevel(content){
     </div>`;
   }).join('');
 }
+
+function renderModificarRutina(content, diaEntry, exs){
+  content.innerHTML = `
+    ${breadcrumbHtml(diaEntry, 'editar')}
+    <div class="focus-edit-row">
+      <input type="text" id="focus-input" placeholder="Ej: Pecho y tríceps, Descanso..." value="${esc(diaEntry.focus||'')}">
+      <button onclick="saveFocus()">Guardar nombre</button>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Ejercicios de este día</div>
+    <div id="current-ex-list"></div>
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin:20px 0 10px">Añadir desde el catálogo</div>
+    <div id="catalog-list"></div>
+    <div class="toolbar" style="margin-top:6px">
+      <div></div>
+      <button class="btn-secondary" onclick="openExModal()"><i class="ti ti-plus"></i> Otro ejercicio (personalizado)</button>
+    </div>
+  `;
+
+  const curList = document.getElementById('current-ex-list');
+  curList.innerHTML = exs.length ? exs.map(ex=>`
+    <div class="mini-ex-card">
+      <span class="mini-ex-name">${esc(ex.nombre)}</span>
+      <button class="act-btn" onclick="deleteEx('${ex.id}')" aria-label="Quitar"><i class="ti ti-trash"></i></button>
+    </div>`).join('') : `<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Todavía no has añadido ningún ejercicio a este día</div>`;
+
+  const addedNames = new Set(exs.map(e=>e.nombre.toLowerCase()));
+  const catList = document.getElementById('catalog-list');
+  catList.innerHTML = Object.entries(EXERCISE_CATALOG).map(([grupo, ejercicios])=>`
+    <div class="catalog-group">
+      <div class="catalog-group-title">${grupo}</div>
+      <div class="catalog-chips">
+        ${ejercicios.map(nombre=>{
+          const added = addedNames.has(nombre.toLowerCase());
+          const safe = nombre.replace(/'/g,"\\'");
+          return `<button class="catalog-chip ${added?'added':''}" ${added?'disabled':`onclick="addFromCatalog('${safe}')"`}>
+            <i class="ti ti-${added?'check':'plus'}"></i>${esc(nombre)}
+          </button>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+window.saveFocus = async () => {
+  const focus = document.getElementById('focus-input').value.trim();
+  await updateDoc(userDoc('gym_dias', navDiaId), {focus});
+  showToast('Nombre de rutina guardado ✓');
+};
+
+window.addFromCatalog = async (nombre) => {
+  const exists = ejerciciosList.some(e=>e.diaId===navDiaId && e.nombre.toLowerCase()===nombre.toLowerCase());
+  if(exists) return;
+  await addDoc(userCol('gym_ejercicios'), {nombre, diaId: navDiaId, createdAt:new Date().toISOString()});
+  showToast('Añadido: '+nombre);
+};
 
 function fmtDate(fecha){
   const [y,m,d] = (fecha||'').split('-');
@@ -1250,7 +1372,7 @@ window.changeBalanceDate = (delta) => {
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeDayModal(); closeExModal(); closeCardioModal(); closePesoModal(); closeComidaModal(); closePasosModal(); closeDayDetailModal(); closeScoreModal(); }
+  if(e.key==='Escape'){ closeDayOptionsModal(); closeExModal(); closeCardioModal(); closePesoModal(); closeComidaModal(); closePasosModal(); closeDayDetailModal(); closeScoreModal(); }
 });
 </script>
 </body>
