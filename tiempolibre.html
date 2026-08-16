@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .breadcrumb-item.current{color:var(--text);font-weight:600;cursor:default}
 .breadcrumb-sep{color:var(--text3);font-size:11px}
 
-/* Tarjetas de carpeta deporte/torneo */
+/* Tarjetas de carpeta deporte/equipo */
 .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .folder-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:all .15s;position:relative;display:flex;flex-direction:column;gap:8px}
 .folder-card:hover{border-color:var(--c-deporte);transform:translateY(-1px)}
@@ -117,16 +117,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .folder-meta{font-size:12px;color:var(--text3)}
 .folder-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
 .folder-card:hover .folder-actions{opacity:1}
-
-.deporte-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:border-color .15s;position:relative}
-.deporte-card:hover{border-color:var(--border2)}
-.deporte-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.deporte-sport{font-size:11px;font-weight:700;color:var(--c-deporte-t);background:var(--c-deporte-bg);padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.03em}
-.deporte-fecha{font-size:12px;color:var(--text3)}
-.deporte-versus{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
-.deporte-torneo{font-size:12px;color:var(--text2)}
-.deporte-resultado{font-size:13px;font-weight:700;margin-top:8px;color:var(--text)}
-.deporte-actions{display:flex;gap:4px;position:absolute;top:14px;right:16px}
 
 .empty-state{text-align:center;color:var(--text3);padding:60px 0;font-size:13px}
 .empty-state i{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
@@ -275,61 +265,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
-<!-- Modal nuevo torneo -->
-<div class="modal-bg" id="torneo-modal-bg" onclick="if(event.target===this)closeTorneoModal()">
+<!-- Modal nuevo equipo/jugador -->
+<div class="modal-bg" id="equipo-modal-bg" onclick="if(event.target===this)closeEquipoModal()">
   <div class="modal">
-    <h2 id="torneo-modal-title">Nuevo torneo</h2>
+    <h2 id="equipo-modal-title">Nuevo equipo/jugador</h2>
     <div class="form-group">
-      <label>Nombre del torneo / liga / competición</label>
-      <input type="text" id="t-nombre" placeholder="Ej: La Liga, Roland Garros, UFC 305...">
+      <label>Nombre del equipo o jugador</label>
+      <input type="text" id="e-nombre" placeholder="Ej: Real Madrid, Nadal...">
     </div>
     <div class="form-group">
-      <label>Año / Temporada</label>
-      <input type="number" id="t-anio" placeholder="Ej: 2026" min="1900" max="2100">
+      <label>Partidos vistos</label>
+      <input type="number" id="e-partidos" min="0" value="0">
     </div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeTorneoModal()">Cancelar</button>
-      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveTorneo()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal partido -->
-<div class="modal-bg" id="deporte-modal-bg" onclick="if(event.target===this)closeDeporteModal()">
-  <div class="modal">
-    <h2>Añadir partido / evento</h2>
-    <div class="form-group">
-      <label>Fecha</label>
-      <input type="date" id="d-fecha">
-    </div>
-    <div class="form-group">
-      <label>Equipo / Jugador 1</label>
-      <input type="text" id="d-p1" placeholder="Ej: Real Madrid / Nadal">
-    </div>
-    <div class="form-group">
-      <label>Equipo / Jugador 2</label>
-      <input type="text" id="d-p2" placeholder="Ej: Barcelona / Djokovic">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Estado</label>
-        <select id="d-estado">
-          <option value="pendiente">Pendiente</option>
-          <option value="terminado">Visto</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Resultado (opcional)</label>
-        <input type="text" id="d-resultado" placeholder="Ej: 2-1, 6-4 6-3...">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Notas (opcional)</label>
-      <textarea id="d-notas" placeholder="Comentarios sobre el partido..."></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeDeporteModal()">Cancelar</button>
-      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveDeporte()">Guardar</button>
+      <button class="btn-cancel" onclick="closeEquipoModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveEquipo()">Guardar</button>
     </div>
   </div>
 </div>
@@ -358,8 +308,8 @@ let currentUser = null;
 let activeTab = 'anime';
 let activeFilter = 'todos';
 let searchQuery = { anime:'', manga:'', libro:'', pelicula:'', serie:'', deporte:'' };
-let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList = [], deporteList = [], sportsList = [], torneosList = [];
-let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubDeporte=null, unsubSports=null, unsubTorneos=null;
+let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList = [], equiposList = [], sportsList = [];
+let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubEquipos=null, unsubSports=null;
 let editId = null, currentRating = 0, selectedCover = null;
 
 // Configuracion por tipo de lista (anime, manga, libro, pelicula, serie)
@@ -386,8 +336,8 @@ function setListOf(type, arr){
   else if(type==='serie') serieList = arr;
 }
 
-// Navegacion deportes: null = vista deportes, sportId = vista torneos, {sportId,torneoId} = vista partidos
-let deporteNav = { sportId: null, torneoId: null };
+// Navegacion deportes: null = vista deportes, sportId = vista equipos/jugadores de ese deporte
+let deporteNav = { sportId: null };
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){
@@ -401,7 +351,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubEquipos,unsubSports].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -417,7 +367,7 @@ onAuthStateChanged(auth, user => {
     switchTab('anime');
   } else {
     currentUser = null;
-    animeList=[]; mangaList=[]; libroList=[]; peliculaList=[]; serieList=[]; deporteList=[]; sportsList=[]; torneosList=[];
+    animeList=[]; mangaList=[]; libroList=[]; peliculaList=[]; serieList=[]; equiposList=[]; sportsList=[];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
@@ -427,7 +377,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubDeporte,unsubSports,unsubTorneos].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubEquipos,unsubSports].forEach(u=>u&&u());
   unsubAnime = onSnapshot(userCol('anime'), snap => {
     animeList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='anime') renderTab();
@@ -448,29 +398,21 @@ function subscribeData(){
     serieList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='serie') renderTab();
   });
-  unsubDeporte = onSnapshot(userCol('deportes_partidos'), snap => {
-    deporteList = snap.docs.map(d=>({id:d.id,...d.data()}));
-    deporteList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-    if(activeTab==='deporte') renderTab();
-  });
   unsubSports = onSnapshot(userCol('deportes_sports'), snap => {
     sportsList = snap.docs.map(d=>({id:d.id,...d.data()}));
     sportsList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
     if(activeTab==='deporte') renderTab();
   });
-  unsubTorneos = onSnapshot(userCol('deportes_torneos'), snap => {
-    torneosList = snap.docs.map(d=>({id:d.id,...d.data()}));
-    torneosList.sort((a,b)=>{
-      if((b.anio||0) !== (a.anio||0)) return (b.anio||0)-(a.anio||0);
-      return a.nombre.localeCompare(b.nombre);
-    });
+  unsubEquipos = onSnapshot(userCol('deportes_equipos'), snap => {
+    equiposList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    equiposList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
     if(activeTab==='deporte') renderTab();
   });
 }
 
 window.switchTab = (tab) => {
   activeTab = tab; activeFilter = 'todos';
-  if(tab === 'deporte') deporteNav = { sportId:null, torneoId:null };
+  if(tab === 'deporte') deporteNav = { sportId:null };
   ['anime','manga','libro','pelicula','serie','deporte'].forEach(t=>{
     document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab);
   });
@@ -678,14 +620,12 @@ window.incrementTotal = async (type, id) => {
   showToast('Añadido al total ✓');
 };
 
-// ================== DEPORTES (3 niveles: deporte -> torneo -> partidos) ==================
+// ================== DEPORTES (2 niveles: deporte -> equipos/jugadores) ==================
 function renderDeporteTab(content){
   if(!deporteNav.sportId){
     renderSportsLevel(content);
-  } else if(!deporteNav.torneoId){
-    renderTorneosLevel(content);
   } else {
-    renderPartidosLevel(content);
+    renderEquiposLevel(content);
   }
 }
 
@@ -716,9 +656,9 @@ function renderSportsLevel(content){
   }
   const sportIcons = {futbol:'ball-football',tenis:'tennis-ball',baloncesto:'basketball',f1:'steering-wheel',mma:'karate',boxeo:'boxing-glove'};
   grid.innerHTML = filtered.map(s=>{
-    const nTorneos = torneosList.filter(t=>t.sportId===s.id).length;
-    const partidoIds = torneosList.filter(t=>t.sportId===s.id).map(t=>t.id);
-    const nPartidos = deporteList.filter(p=>partidoIds.includes(p.torneoId)).length;
+    const equiposDeporte = equiposList.filter(e=>e.sportId===s.id);
+    const nEquipos = equiposDeporte.length;
+    const nPartidos = equiposDeporte.reduce((sum,e)=>sum+(e.partidos||0),0);
     const key = s.nombre.toLowerCase().replace(/\s/g,'');
     const icon = sportIcons[key] || 'ball-football';
     return `
@@ -729,17 +669,17 @@ function renderSportsLevel(content){
       </div>
       <div class="folder-icon"><i class="ti ti-${icon}"></i></div>
       <div class="folder-name">${esc(s.nombre)}</div>
-      <div class="folder-meta">${nTorneos} torneo${nTorneos!==1?'s':''} · ${nPartidos} partido${nPartidos!==1?'s':''}</div>
+      <div class="folder-meta">${nEquipos} equipo${nEquipos!==1?'s':''}/jugador${nEquipos!==1?'es':''} · ${nPartidos} partido${nPartidos!==1?'s':''} visto${nPartidos!==1?'s':''}</div>
     </div>`;
   }).join('');
 }
 
-function renderTorneosLevel(content){
+function renderEquiposLevel(content){
   const sport = sportsList.find(s=>s.id===deporteNav.sportId);
   if(!sport){ deporteNav.sportId=null; renderTab(); return; }
   const q = searchQuery.deporte.toLowerCase().trim();
-  let filtered = torneosList.filter(t=>t.sportId===deporteNav.sportId);
-  if(q) filtered = filtered.filter(t=>t.nombre.toLowerCase().includes(q) || String(t.anio||'').includes(q));
+  let filtered = equiposList.filter(e=>e.sportId===deporteNav.sportId);
+  if(q) filtered = filtered.filter(e=>e.nombre.toLowerCase().includes(q));
 
   content.innerHTML = `
     <div class="breadcrumb">
@@ -751,103 +691,42 @@ function renderTorneosLevel(content){
       <div class="filter-row">
         <div class="search-box" id="search-box-deporte">
           <i class="ti ti-search"></i>
-          <input type="text" id="search-input-deporte" placeholder="Buscar torneo..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
+          <input type="text" id="search-input-deporte" placeholder="Buscar equipo/jugador..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
           <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
         </div>
       </div>
-      <button class="btn-primary b-deporte" onclick="openTorneoModal()"><i class="ti ti-plus"></i> Nuevo torneo</button>
+      <button class="btn-primary b-deporte" onclick="openEquipoModal()"><i class="ti ti-plus"></i> Nuevo equipo/jugador</button>
     </div>
-    <div class="folder-grid" id="torneos-grid"></div>
+    <div class="folder-grid" id="equipos-grid"></div>
   `;
   if(q) document.getElementById('search-box-deporte').classList.add('has-text');
 
-  const grid = document.getElementById('torneos-grid');
+  const grid = document.getElementById('equipos-grid');
   if(!filtered.length){
-    grid.outerHTML = `<div class="empty-state"><i class="ti ti-trophy"></i>${q?'Sin resultados':'Sin torneos en '+esc(sport.nombre)}<br><small style="margin-top:6px;display:block">${q?'':'Crea un torneo para empezar a añadir partidos'}</small></div>`;
+    grid.outerHTML = `<div class="empty-state"><i class="ti ti-shirt-sport"></i>${q?'Sin resultados':'Sin equipos/jugadores en '+esc(sport.nombre)}<br><small style="margin-top:6px;display:block">${q?'':'Añade un equipo o jugador para empezar a contar partidos vistos'}</small></div>`;
     return;
   }
-  grid.innerHTML = filtered.map(t=>{
-    const nPartidos = deporteList.filter(p=>p.torneoId===t.id).length;
+  grid.innerHTML = filtered.map(e=>{
+    const n = e.partidos||0;
     return `
-    <div class="folder-card" onclick="openTorneo('${t.id}')">
+    <div class="folder-card" style="cursor:default">
       <div class="folder-actions">
-        <button class="card-act-btn" onclick="event.stopPropagation();editTorneo('${t.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
-        <button class="card-act-btn" onclick="event.stopPropagation();deleteTorneo('${t.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+        <button class="card-act-btn" onclick="event.stopPropagation();editEquipo('${e.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
+        <button class="card-act-btn" onclick="event.stopPropagation();deleteEquipo('${e.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
       </div>
-      <div class="folder-icon"><i class="ti ti-trophy"></i></div>
-      <div class="folder-name">${esc(t.nombre)}${t.anio?` <span style="color:var(--text3);font-weight:500">${t.anio}</span>`:''}</div>
-      <div class="folder-meta">${nPartidos} partido${nPartidos!==1?'s':''}</div>
+      <div class="folder-icon"><i class="ti ti-shirt-sport"></i></div>
+      <div class="folder-name">${esc(e.nombre)}</div>
+      <div class="folder-meta">${n} partido${n!==1?'s':''} visto${n!==1?'s':''}</div>
+      <div class="step-row">
+        <button class="step-btn" onclick="stepPartidos('${e.id}',-1)" aria-label="Restar partido">−</button>
+        <button class="step-btn" style="width:auto;padding:0 10px" onclick="stepPartidos('${e.id}',1)" aria-label="Sumar partido"><i class="ti ti-plus" style="font-size:11px"></i> Partido visto</button>
+      </div>
     </div>`;
   }).join('');
 }
 
-function renderPartidosLevel(content){
-  const sport = sportsList.find(s=>s.id===deporteNav.sportId);
-  const torneo = torneosList.find(t=>t.id===deporteNav.torneoId);
-  if(!sport || !torneo){ deporteNav={sportId:null,torneoId:null}; renderTab(); return; }
-  let filtered = deporteList.filter(p=>p.torneoId===deporteNav.torneoId);
-  filtered = activeFilter==='todos' ? filtered : filtered.filter(p=>p.estado===activeFilter);
-  const q = searchQuery.deporte.toLowerCase().trim();
-  if(q) filtered = filtered.filter(p=>p.p1.toLowerCase().includes(q) || (p.p2||'').toLowerCase().includes(q));
-
-  const all = deporteList.filter(p=>p.torneoId===deporteNav.torneoId);
-  const counts = { todos: all.length, pendiente: all.filter(p=>p.estado==='pendiente').length, terminado: all.filter(p=>p.estado==='terminado').length };
-
-  content.innerHTML = `
-    <div class="breadcrumb">
-      <span class="breadcrumb-item" onclick="backToSports()"><i class="ti ti-ball-football"></i> Deportes</span>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item" onclick="backToTorneos()">${esc(sport.nombre)}</span>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item current">${esc(torneo.nombre)}${torneo.anio?' '+torneo.anio:''}</span>
-    </div>
-    <div class="toolbar">
-      <div class="filter-row">
-        <div class="search-box" id="search-box-deporte">
-          <i class="ti ti-search"></i>
-          <input type="text" id="search-input-deporte" placeholder="Buscar jugador/equipo..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
-          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
-        </div>
-        <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
-        <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendientes (${counts.pendiente})</button>
-        <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Vistos (${counts.terminado})</button>
-      </div>
-      <button class="btn-primary b-deporte" onclick="openDeporteModal()"><i class="ti ti-plus"></i> Añadir partido</button>
-    </div>
-    <div id="deportes-list"></div>
-  `;
-  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
-
-  const list = document.getElementById('deportes-list');
-  if(!filtered.length){
-    list.innerHTML = `<div class="empty-state"><i class="ti ti-ball-football"></i>${q?'Sin resultados':'Sin partidos en este torneo'}<br><small style="margin-top:6px;display:block">${q?'':'Añade el primer partido o evento'}</small></div>`;
-    return;
-  }
-  list.innerHTML = filtered.map(d=>{
-    const [y,m,dd] = (d.fecha||'').split('-');
-    const fechaFmt = y ? `${dd}/${m}/${y}` : '';
-    return `
-    <div class="deporte-card">
-      <div class="deporte-actions">
-        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="editDeporte('${d.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
-        <button class="card-act-btn" style="position:static;background:var(--bg3);color:var(--text3)" onclick="deleteDeporte('${d.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-      </div>
-      <div class="deporte-top">
-        <span class="deporte-sport">${esc(sport.nombre)}</span>
-        <span class="deporte-fecha">${fechaFmt}</span>
-      </div>
-      <div class="deporte-versus">${esc(d.p1)} ${d.p2?'vs '+esc(d.p2):''}</div>
-      ${d.resultado?`<div class="deporte-resultado">Resultado: ${esc(d.resultado)}</div>`:''}
-      ${d.notas?`<div class="deporte-torneo">${esc(d.notas)}</div>`:''}
-      <span class="card-status status-${d.estado}" style="margin-top:8px">${d.estado==='terminado'?'Visto':'Pendiente'}</span>
-    </div>`;
-  }).join('');
-}
-
-window.backToSports = () => { deporteNav={sportId:null,torneoId:null}; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
-window.backToTorneos = () => { deporteNav.torneoId=null; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
-window.openSport = (id) => { deporteNav.sportId=id; deporteNav.torneoId=null; searchQuery.deporte=''; renderTab(); };
-window.openTorneo = (id) => { deporteNav.torneoId=id; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
+window.backToSports = () => { deporteNav={sportId:null}; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
+window.openSport = (id) => { deporteNav.sportId=id; searchQuery.deporte=''; renderTab(); };
 
 // --- Modal deporte (carpeta) ---
 window.openSportModal = () => {
@@ -874,97 +753,55 @@ window.saveSport = async () => {
   showToast(editId?'Actualizado':'Deporte añadido ✓');
 };
 window.deleteSport = async (id) => {
-  const nT = torneosList.filter(t=>t.sportId===id).length;
-  if(nT>0){ showToast(`Primero elimina los ${nT} torneo(s) de este deporte`); return; }
+  const nE = equiposList.filter(e=>e.sportId===id).length;
+  if(nE>0){ showToast(`Primero elimina los ${nE} equipo(s)/jugador(es) de este deporte`); return; }
   if(!confirm('¿Eliminar este deporte?')) return;
   await deleteDoc(userDoc('deportes_sports', id));
   showToast('Eliminado');
 };
 
-// --- Modal torneo (carpeta) ---
-window.openTorneoModal = () => {
+// --- Modal equipo/jugador ---
+window.openEquipoModal = () => {
   editId = null;
-  document.getElementById('torneo-modal-title').textContent = 'Nuevo torneo';
-  document.getElementById('t-nombre').value = '';
-  document.getElementById('t-anio').value = new Date().getFullYear();
-  document.getElementById('torneo-modal-bg').classList.add('open');
-  setTimeout(()=>document.getElementById('t-nombre').focus(),60);
+  document.getElementById('equipo-modal-title').textContent = 'Nuevo equipo/jugador';
+  document.getElementById('e-nombre').value = '';
+  document.getElementById('e-partidos').value = 0;
+  document.getElementById('equipo-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('e-nombre').focus(),60);
 };
-window.closeTorneoModal = () => document.getElementById('torneo-modal-bg').classList.remove('open');
-window.editTorneo = (id) => {
-  const t = torneosList.find(x=>x.id===id); if(!t) return;
+window.closeEquipoModal = () => document.getElementById('equipo-modal-bg').classList.remove('open');
+window.editEquipo = (id) => {
+  const e = equiposList.find(x=>x.id===id); if(!e) return;
   editId = id;
-  document.getElementById('torneo-modal-title').textContent = 'Editar torneo';
-  document.getElementById('t-nombre').value = t.nombre;
-  document.getElementById('t-anio').value = t.anio || '';
-  document.getElementById('torneo-modal-bg').classList.add('open');
+  document.getElementById('equipo-modal-title').textContent = 'Editar equipo/jugador';
+  document.getElementById('e-nombre').value = e.nombre;
+  document.getElementById('e-partidos').value = e.partidos || 0;
+  document.getElementById('equipo-modal-bg').classList.add('open');
 };
-window.saveTorneo = async () => {
-  const nombre = document.getElementById('t-nombre').value.trim();
-  if(!nombre) return;
-  const anio = document.getElementById('t-anio').value ? parseInt(document.getElementById('t-anio').value) : null;
-  if(editId) await updateDoc(userDoc('deportes_torneos', editId), {nombre, anio});
-  else await addDoc(userCol('deportes_torneos'), {nombre, anio, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
-  closeTorneoModal();
-  showToast(editId?'Actualizado':'Torneo añadido ✓');
+window.saveEquipo = async () => {
+  const nombre = document.getElementById('e-nombre').value.trim();
+  if(!nombre){ document.getElementById('e-nombre').focus(); return; }
+  const partidos = parseInt(document.getElementById('e-partidos').value)||0;
+  if(editId) await updateDoc(userDoc('deportes_equipos', editId), {nombre, partidos});
+  else await addDoc(userCol('deportes_equipos'), {nombre, partidos, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
+  closeEquipoModal();
+  showToast(editId?'Actualizado':'Equipo/jugador añadido ✓');
 };
-window.deleteTorneo = async (id) => {
-  const nP = deporteList.filter(p=>p.torneoId===id).length;
-  if(nP>0){ showToast(`Primero elimina los ${nP} partido(s) de este torneo`); return; }
-  if(!confirm('¿Eliminar este torneo?')) return;
-  await deleteDoc(userDoc('deportes_torneos', id));
+window.deleteEquipo = async (id) => {
+  if(!confirm('¿Eliminar este equipo/jugador?')) return;
+  await deleteDoc(userDoc('deportes_equipos', id));
   showToast('Eliminado');
 };
-
-// --- Modal partido ---
-window.openDeporteModal = () => {
-  editId = null;
-  document.getElementById('d-fecha').value = new Date().toISOString().slice(0,10);
-  document.getElementById('d-p1').value = '';
-  document.getElementById('d-p2').value = '';
-  document.getElementById('d-estado').value = 'pendiente';
-  document.getElementById('d-resultado').value = '';
-  document.getElementById('d-notas').value = '';
-  document.getElementById('deporte-modal-bg').classList.add('open');
-};
-window.closeDeporteModal = () => document.getElementById('deporte-modal-bg').classList.remove('open');
-window.editDeporte = (id) => {
-  const d = deporteList.find(x=>x.id===id);
-  if(!d) return;
-  editId = id;
-  document.getElementById('d-fecha').value = d.fecha;
-  document.getElementById('d-p1').value = d.p1;
-  document.getElementById('d-p2').value = d.p2 || '';
-  document.getElementById('d-estado').value = d.estado;
-  document.getElementById('d-resultado').value = d.resultado || '';
-  document.getElementById('d-notas').value = d.notas || '';
-  document.getElementById('deporte-modal-bg').classList.add('open');
-};
-window.saveDeporte = async () => {
-  const p1 = document.getElementById('d-p1').value.trim();
-  if(!p1){ document.getElementById('d-p1').focus(); return; }
-  const data = {
-    fecha: document.getElementById('d-fecha').value,
-    p1,
-    p2: document.getElementById('d-p2').value.trim(),
-    estado: document.getElementById('d-estado').value,
-    resultado: document.getElementById('d-resultado').value.trim(),
-    notas: document.getElementById('d-notas').value.trim(),
-    updatedAt: new Date().toISOString()
-  };
-  if(editId) await updateDoc(userDoc('deportes_partidos', editId), data);
-  else await addDoc(userCol('deportes_partidos'), {...data, torneoId: deporteNav.torneoId, createdAt: new Date().toISOString()});
-  closeDeporteModal();
-  showToast(editId?'Actualizado':'Añadido ✓');
-};
-window.deleteDeporte = async (id) => {
-  if(!confirm('¿Eliminar este partido?')) return;
-  await deleteDoc(userDoc('deportes_partidos', id));
-  showToast('Eliminado');
+window.stepPartidos = async (id, delta) => {
+  const e = equiposList.find(x=>x.id===id);
+  if(!e) return;
+  let partidos = (e.partidos||0) + delta;
+  if(partidos < 0) partidos = 0;
+  await updateDoc(userDoc('deportes_equipos', id), {partidos});
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeDeporteModal(); closeSportModal(); closeTorneoModal(); }
+  if(e.key==='Escape'){ closeModal(); closeSportModal(); closeEquipoModal(); }
 });
 </script>
 </body>
