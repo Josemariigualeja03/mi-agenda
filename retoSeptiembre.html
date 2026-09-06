@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reto de Septiembre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1420;
+    --panel:#171E2E;
+    --panel-2:#1D2740;
+    --border:#262E42;
+    --text:#E7E9F0;
+    --muted:#8B93A7;
+    --fire:#E2984A;
+    --fire-dim:#E2984A33;
+    --ink:#5FB8B0;
+    --ink-dim:#5FB8B033;
+    --danger:#D2665A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3,.headline{font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 0;}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .topbar h1{font-size:22px;font-weight:700;margin:0;letter-spacing:.2px;}
+  .daybadge{background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--muted);white-space:nowrap;}
+  .daybadge b{color:var(--text);}
+
+  /* Day strip */
+  .daystrip{display:flex;gap:5px;overflow-x:auto;padding:4px 2px 14px;margin-bottom:6px;}
+  .daydot{
+    flex:0 0 auto;width:34px;height:40px;border-radius:9px;
+    background:var(--panel);border:1px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:11px;color:var(--muted);cursor:pointer;user-select:none;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .daydot span{font-weight:600;font-size:13px;color:var(--text);}
+  .daydot.today{border-color:var(--text);}
+  .daydot.selected{transform:translateY(-3px);border-color:var(--fire);}
+  .daydot.full{background:linear-gradient(160deg,var(--fire-dim),var(--ink-dim));}
+  .daydot:hover{transform:translateY(-2px);}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .tab{
+    flex:1;text-align:center;padding:11px 0;border-radius:11px;
+    background:var(--panel);border:1px solid var(--border);
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;
+    cursor:pointer;color:var(--muted);transition:all .15s ease;
+  }
+  .tab.active.fisico{color:var(--fire);border-color:var(--fire);background:var(--fire-dim);}
+  .tab.active.historias{color:var(--ink);border-color:var(--ink);background:var(--ink-dim);}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .panel h2{font-size:15px;margin:0 0 12px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .dot-fire{width:8px;height:8px;border-radius:50%;background:var(--fire);display:inline-block;}
+  .dot-ink{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block;}
+
+  .row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+  .row:last-child{border-bottom:none;}
+  .row-label{font-size:14px;}
+  .row-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .check{
+    width:26px;height:26px;border-radius:8px;border:1.5px solid var(--border);
+    background:var(--panel-2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;transition:all .15s ease;
+  }
+  .check.on.fire{background:var(--fire);border-color:var(--fire);}
+  .check.on.ink{background:var(--ink);border-color:var(--ink);}
+  .check svg{width:15px;height:15px;stroke:#0F1420;fill:none;stroke-width:3;display:none;}
+  .check.on svg{display:block;}
+
+  input[type=number],input[type=text],input[type=date]{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:8px 10px;font-family:'Inter',sans-serif;font-size:13px;width:100%;
+  }
+  select{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;}
+
+  .weight-form{display:flex;gap:8px;margin-bottom:14px;}
+  .weight-form input{flex:1;}
+  button.primary{
+    background:var(--fire);color:#0F1420;border:none;border-radius:8px;
+    padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;
+    white-space:nowrap;
+  }
+  button.primary.ink{background:var(--ink);}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 12px;font-size:12px;cursor:pointer;}
+
+  .weightlist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+  .weightlist li{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .weightlist li:last-child{border-bottom:none;}
+  .wchange{font-size:12px;padding:2px 7px;border-radius:6px;}
+  .wchange.down{background:#3E5F4A;color:#8FE0A8;}
+  .wchange.up{background:#5F3E3E;color:#E08F8F;}
+  .wchange.flat{background:var(--panel-2);color:var(--muted);}
+
+  .goalbox{margin-top:10px;padding:12px;border-radius:10px;background:var(--panel-2);border:1px dashed var(--border);font-size:13px;color:var(--muted);}
+  .goalbox b{color:var(--fire);}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .statcard{background:var(--panel-2);border-radius:10px;padding:10px;text-align:center;}
+  .statcard .num{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;}
+  .statcard .lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+  .counterrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .counterrow:last-child{border-bottom:none;}
+  .counterrow .clabel{flex:1;font-size:13px;}
+  .barwrap{height:6px;background:var(--panel-2);border-radius:4px;overflow:hidden;margin-top:5px;}
+  .barfill{height:100%;background:var(--ink);border-radius:4px;transition:width .2s ease;}
+  .stepbtn{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);cursor:pointer;font-size:15px;line-height:1;}
+  .countnum{width:26px;text-align:center;font-weight:600;font-size:14px;}
+
+  .titleform{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .titleform .frow{display:flex;gap:8px;}
+  .titlelist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;}
+  .titleitem{display:flex;justify-content:space-between;align-items:center;background:var(--panel-2);border-radius:9px;padding:9px 11px;}
+  .titleitem .ti-main{font-size:13px;}
+  .titleitem .ti-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .badge{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;letter-spacing:.3px;}
+  .badge.anime{background:var(--ink-dim);color:var(--ink);}
+  .badge.manga{background:#7A6DC733;color:#9C90E0;}
+  .badge.novela{background:var(--fire-dim);color:var(--fire);}
+  .delbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;}
+  .delbtn:hover{color:var(--danger);}
+
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0;}
+
+  ::-webkit-scrollbar{height:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>Reto de Septiembre</h1>
+    <div class="daybadge">Día <b id="dayCounter">-</b> / 30</div>
+  </div>
+
+  <div class="daystrip" id="daystrip"></div>
+
+  <div class="tabs">
+    <div class="tab fisico active" id="tabFisico" data-tab="fisico">Cuerpo</div>
+    <div class="tab historias" id="tabHistorias" data-tab="historias">Historias</div>
+  </div>
+
+  <div id="viewFisico"></div>
+  <div id="viewHistorias" style="display:none;"></div>
+</div>
+
+<script>
+/* ---------- Estado y persistencia ---------- */
+const STORAGE_KEY = 'reto_septiembre_2026';
+const YEAR = 2026, MONTH = 8; // septiembre = index 8
+const DAYS_IN_MONTH = new Date(YEAR, MONTH+1, 0).getDate();
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return { weights: [], days: {}, titles: [], goalWeight: null };
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+
+function dateKey(d){ return `${YEAR}-${String(MONTH+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function getDay(d){
+  const k = dateKey(d);
+  if(!state.days[k]) state.days[k] = { cardio:false, fuerza:false, ayuno:false, anime:0, manga:0, novela:0 };
+  return state.days[k];
+}
+
+const todayObj = new Date();
+const isCurrentMonth = todayObj.getFullYear()===YEAR && todayObj.getMonth()===MONTH;
+let selectedDay = isCurrentMonth ? todayObj.getDate() : 1;
+let activeTab = 'fisico';
+
+const GOALS = { anime:6, manga:10, novela:5 };
+
+/* ---------- Day strip ---------- */
+function dayCompletion(d){
+  const day = getDay(d);
+  const physOk = day.cardio && day.fuerza && day.ayuno;
+  const readOk = day.anime>=GOALS.anime && day.manga>=GOALS.manga && day.novela>=GOALS.novela;
+  return { physOk, readOk, full: physOk && readOk };
+}
+
+function renderDayStrip(){
+  const strip = document.getElementById('daystrip');
+  strip.innerHTML = '';
+  for(let d=1; d<=DAYS_IN_MONTH; d++){
+    const el = document.createElement('div');
+    const comp = dayCompletion(d);
+    let cls = 'daydot';
+    if(comp.full) cls += ' full';
+    if(isCurrentMonth && d===todayObj.getDate()) cls += ' today';
+    if(d===selectedDay) cls += ' selected';
+    el.className = cls;
+    el.innerHTML = `<span>${d}</span>`;
+    el.addEventListener('click', ()=>{ selectedDay=d; renderAll(); });
+    strip.appendChild(el);
+  }
+  document.getElementById('dayCounter').textContent = selectedDay;
+  // scroll selected into view
+  requestAnimationFrame(()=>{
+    const sel = strip.children[selectedDay-1];
+    if(sel) sel.scrollIntoView({inline:'center', block:'nearest'});
+  });
+}
+
+/* ---------- Tabs ---------- */
+document.getElementById('tabFisico').addEventListener('click', ()=>{ activeTab='fisico'; renderAll(); });
+document.getElementById('tabHistorias').addEventListener('click', ()=>{ activeTab='historias'; renderAll(); });
+
+function renderTabs(){
+  document.getElementById('tabFisico').classList.toggle('active', activeTab==='fisico');
+  document.getElementById('tabHistorias').classList.toggle('active', activeTab==='historias');
+  document.getElementById('viewFisico').style.display = activeTab==='fisico' ? '' : 'none';
+  document.getElementById('viewHistorias').style.display = activeTab==='historias' ? '' : 'none';
+}
+
+/* ---------- Peso: sugerencia de objetivo realista ---------- */
+function suggestGoal(firstWeight){
+  // Pérdida saludable orientativa: 0.5% del peso corporal por semana, ~4 semanas restantes de septiembre
+  const weeklyLoss = Math.max(0.3, Math.min(0.8, firstWeight * 0.005));
+  const weeksLeft = 4;
+  const suggested = Math.round((firstWeight - weeklyLoss*weeksLeft) * 10) / 10;
+  return suggested;
+}
+
+function checkIcon(){
+  return '<svg viewBox="0 0 24 24"><polyline points="4,13 9,18 20,6"/></svg>';
+}
+
+/* ---------- Vista Físico ---------- */
+function renderFisico(){
+  const day = getDay(selectedDay);
+  const weights = state.weights;
+  let goalLine = '';
+  if(weights.length===0){
+    goalLine = `<div class="goalbox">Apunta tu primer peso y te propondré un objetivo realista para el resto de septiembre.</div>`;
+  } else if(state.goalWeight){
+    goalLine = `<div class="goalbox">Objetivo sugerido: <b>${state.goalWeight} kg</b> a final de mes <button class="ghost" id="editGoal" style="margin-left:8px;">editar</button></div>`;
+  }
+
+  const weightRows = weights.slice().reverse().map((w,i)=>{
+    const idx = weights.length - 1 - i;
+    let changeHtml = '';
+    if(idx>0){
+      const diff = Math.round((w.value - weights[idx-1].value)*10)/10;
+      const cls = diff<0?'down':(diff>0?'up':'flat');
+      changeHtml = `<span class="wchange ${cls}">${diff>0?'+':''}${diff} kg</span>`;
+    }
+    return `<li><span>${w.date}: <b>${w.value} kg</b></span>${changeHtml}</li>`;
+  }).join('');
+
+  const first = weights[0];
+  const last = weights[weights.length-1];
+  const totalDiff = (first && last && weights.length>1) ? Math.round((last.value-first.value)*10)/10 : null;
+
+  document.getElementById('viewFisico').innerHTML = `
+    <div class="panel">
+      <h2><span class="dot-fire"></span>Peso (cada 2 semanas)</h2>
+      <div class="weight-form">
+        <input type="number" step="0.1" id="weightInput" placeholder="Peso en kg">
+        <button class="primary" id="addWeight">Añadir</button>
+      </div>
+      ${weights.length ? `<ul class="weightlist">${weightRows}</ul>` : '<div class="empty">Aún no hay pesajes registrados.</div>'}
+      ${totalDiff!==null ? `<div class="goalbox" style="margin-top:10px;">Cambio total: <b>${totalDiff>0?'+':''}${totalDiff} kg</b> desde el primer pesaje</div>` : ''}
+      ${goalLine}
+    </div>
+
+    <div class="panel">
+      <h2><span class="dot-fire"></span>Día ${selectedDay} de septiembre</h2>
+      <div class="row">
+        <div><div class="row-label">Cardio (mañana)</div></div>
+        <div class="check ${day.cardio?'on fire':''}" id="chkCardio">${checkIcon()}</div>
+      </div>
+      <div class="row">
+        <div><div class="row-label">Fuerza (tarde)</div></div>
+        <div class="check ${day.fuerza?'on fire':''}" id="chkFuerza">${checkIcon()}</div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="row-label">Ayuno intermitente</div>
+          <div class="row-sub">Comida 13:00–14:00 · Cena 21:30–22:00</div>
+        </div>
+        <div class="check ${day.ayuno?'on fire':''}" id="chkAyuno">${checkIcon()}</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Resumen del mes</h2>
+      <div class="stat-grid">
+        <div class="statcard"><div class="num">${countDays(d=>d.cardio)}</div><div class="lbl">días cardio</div></div>
+        <div class="statcard"><div class="num">${countDays(d=>d.fuerza)}</div><div class="lbl">días fuerza</div></div>
+        <div class="statcard"><div class="num">${countDays(d=>d.ayuno)}</div><div class="lbl">días ayuno</div></div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('addWeight').addEventListener('click', ()=>{
+    const val = parseFloat(document.getElementById('weightInput').value);
+    if(!val || val<=0) return;
+    const dateStr = dateKey(selectedDay);
+    state.weights.push({ date: dateStr, value: val });
+    if(state.weights.length===1){
+      state.goalWeight = suggestGoal(val);
+    }
+    saveState();
+    renderAll();
+  });
+
+  const editBtn = document.getElementById('editGoal');
+  if(editBtn){
+    editBtn.addEventListener('click', ()=>{
+      const val = parseFloat(prompt('Nuevo objetivo de peso (kg):', state.goalWeight));
+      if(val && val>0){ state.goalWeight = val; saveState(); renderAll(); }
+    });
+  }
+
+  document.getElementById('chkCardio').addEventListener('click', ()=>{ day.cardio=!day.cardio; saveState(); renderAll(); });
+  document.getElementById('chkFuerza').addEventListener('click', ()=>{ day.fuerza=!day.fuerza; saveState(); renderAll(); });
+  document.getElementById('chkAyuno').addEventListener('click', ()=>{ day.ayuno=!day.ayuno; saveState(); renderAll(); });
+}
+
+function countDays(pred){
+  return Object.values(state.days).filter(pred).length;
+}
+
+/* ---------- Vista Historias ---------- */
+function renderHistorias(){
+  const day = getDay(selectedDay);
+  const types = [
+    {key:'anime', label:'Anime', unit:'capítulos'},
+    {key:'manga', label:'Manga', unit:'capítulos'},
+    {key:'novela', label:'Novela', unit:'capítulos'},
+  ];
+
+  const counters = types.map(t=>{
+    const val = day[t.key];
+    const goal = GOALS[t.key];
+    const pct = Math.min(100, Math.round(val/goal*100));
+    return `
+      <div class="counterrow">
+        <div style="flex:1;">
+          <div class="clabel">${t.label} <span style="color:var(--muted);">· ${val}/${goal}</span></div>
+          <div class="barwrap"><div class="barfill" style="width:${pct}%; background:${pct>=100?'#8FE0A8':'var(--ink)'};"></div></div>
+        </div>
+        <button class="stepbtn" data-key="${t.key}" data-delta="-1">–</button>
+        <button class="stepbtn" data-key="${t.key}" data-delta="1">+</button>
+      </div>
+    `;
+  }).join('');
+
+  const totalTitles = { anime:0, manga:0, novela:0 };
+  state.titles.forEach(t=>{ totalTitles[t.type] += t.chapters; });
+
+  const titleRows = state.titles.slice().reverse().map((t,i)=>{
+    const idx = state.titles.length - 1 - i;
+    return `
+      <li class="titleitem">
+        <div>
+          <div class="ti-main">${t.name}</div>
+          <div class="ti-sub">${t.chapters} cap. · ${t.date}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${t.type}">${t.type}</span>
+          <button class="delbtn" data-idx="${idx}">✕</button>
+        </div>
+      </li>
+    `;
+  }).join('');
+
+  document.getElementById('viewHistorias').innerHTML = `
+    <div class="panel">
+      <h2><span class="dot-ink"></span>Día ${selectedDay} — objetivos diarios</h2>
+      ${counters}
+    </div>
+
+    <div class="panel">
+      <h2><span class="dot-ink"></span>Registrar título</h2>
+      <div class="titleform">
+        <input type="text" id="titleName" placeholder="Nombre del anime / manga / novela">
+        <div class="frow">
+          <select id="titleType">
+            <option value="anime">Anime</option>
+            <option value="manga">Manga</option>
+            <option value="novela">Novela</option>
+          </select>
+          <input type="number" id="titleChapters" placeholder="Capítulos" style="flex:0 0 100px;">
+          <button class="primary ink" id="addTitle">Añadir</button>
+        </div>
+      </div>
+      ${state.titles.length ? `<ul class="titlelist">${titleRows}</ul>` : '<div class="empty">Aún no has registrado ningún título.</div>'}
+    </div>
+
+    <div class="panel">
+      <h2>Totales del mes</h2>
+      <div class="stat-grid">
+        <div class="statcard"><div class="num">${totalTitles.anime}</div><div class="lbl">cap. anime</div></div>
+        <div class="statcard"><div class="num">${totalTitles.manga}</div><div class="lbl">cap. manga</div></div>
+        <div class="statcard"><div class="num">${totalTitles.novela}</div><div class="lbl">cap. novela</div></div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.stepbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.key;
+      const delta = parseInt(btn.dataset.delta);
+      day[key] = Math.max(0, day[key] + delta);
+      saveState();
+      renderAll();
+    });
+  });
+
+  document.getElementById('addTitle').addEventListener('click', ()=>{
+    const name = document.getElementById('titleName').value.trim();
+    const type = document.getElementById('titleType').value;
+    const chapters = parseInt(document.getElementById('titleChapters').value);
+    if(!name || !chapters || chapters<=0) return;
+    state.titles.push({ name, type, chapters, date: dateKey(selectedDay) });
+    day[type] += chapters;
+    saveState();
+    renderAll();
+  });
+
+  document.querySelectorAll('.delbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.dataset.idx);
+      const removed = state.titles.splice(idx,1)[0];
+      if(removed){
+        const dkey = removed.date;
+        if(state.days[dkey]) state.days[dkey][removed.type] = Math.max(0, state.days[dkey][removed.type]-removed.chapters);
+      }
+      saveState();
+      renderAll();
+    });
+  });
+}
+
+function renderAll(){
+  renderDayStrip();
+  renderTabs();
+  renderFisico();
+  renderHistorias();
+}
+
+renderAll();
+</script>
+</body>
+</html>
