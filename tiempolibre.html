@@ -314,11 +314,11 @@ let editId = null, currentRating = 0, selectedCover = null;
 
 // Configuracion por tipo de lista (anime, manga, libro, pelicula, serie)
 const LIST_TYPES = {
-  anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'eye-off' },
-  manga:    { col:'manga',    label:'manga',    labelCap:'Manga',     progresoLabel:'Capítulos',  estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off' },
-  libro:    { col:'libros',   label:'libro',    labelCap:'Libro',     progresoLabel:'Páginas',    estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off' },
-  pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off' },
-  serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off' }
+  anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'eye-off', step:1 },
+  manga:    { col:'manga',    label:'manga',    labelCap:'Manga',     progresoLabel:'Capítulos',  estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off', step:0.01 },
+  libro:    { col:'libros',   label:'libro',    labelCap:'Libro',     progresoLabel:'Páginas',    estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off', step:1 },
+  pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off', step:1 },
+  serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off', step:1 }
 };
 function listOf(type){
   if(type==='anime') return animeList;
@@ -334,6 +334,23 @@ function setListOf(type, arr){
   else if(type==='libro') libroList = arr;
   else if(type==='pelicula') peliculaList = arr;
   else if(type==='serie') serieList = arr;
+}
+
+// Redondea a 2 decimales evitando errores de coma flotante (ej. 12.1 + 0.01 -> 12.109999...)
+function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+// Parsea el numero de progreso segun el step del tipo (entero para step=1, decimal con 2 cifras para step<1)
+function parseProgreso(val, step){
+  const n = parseFloat(val);
+  if(isNaN(n)) return null;
+  return step < 1 ? round2(n) : Math.trunc(n);
+}
+// Formatea un numero de progreso para mostrarlo (sin ceros decimales sobrantes)
+function formatProgreso(n, step){
+  if(n===null || n===undefined) return '';
+  if(step < 1){
+    return round2(n).toString();
+  }
+  return String(n);
 }
 
 // Navegacion deportes: null = vista deportes, sportId = vista equipos/jugadores de ese deporte
@@ -488,9 +505,9 @@ function renderListTab(content, type){
             <button class="step-btn" onclick="stepProgress('${type}','${it.id}',1)" aria-label="Sumar">+</button>
           </div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-          <span class="progress-text">${it.actual||0}${it.total?'/'+it.total:''}</span>
+          <span class="progress-text">${formatProgreso(it.actual||0, cfg.step)}${it.total?'/'+formatProgreso(it.total, cfg.step):''}</span>
         </div>
-        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir más al total">+1 al total</button>` : ''}
+        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir más al total">+${formatProgreso(cfg.step, cfg.step)} al total</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -532,8 +549,11 @@ window.openModal = (type) => {
   document.getElementById('cover-preview').style.display='none';
   document.getElementById('f-titulo').value='';
   document.getElementById('f-estado').value='pendiente';
-  document.getElementById('f-actual').value=0;
-  document.getElementById('f-total').value='';
+  const fActual = document.getElementById('f-actual');
+  const fTotal = document.getElementById('f-total');
+  fActual.step = cfg.step; fTotal.step = cfg.step;
+  fActual.value = 0;
+  fTotal.value = '';
   document.getElementById('f-notas').value='';
   renderStars();
   document.getElementById('modal-bg').classList.add('open');
@@ -563,8 +583,11 @@ window.editTitulo = (type, id) => {
   }
   document.getElementById('f-titulo').value = it.titulo;
   document.getElementById('f-estado').value = it.estado;
-  document.getElementById('f-actual').value = it.actual || 0;
-  document.getElementById('f-total').value = it.total || '';
+  const fActual = document.getElementById('f-actual');
+  const fTotal = document.getElementById('f-total');
+  fActual.step = cfg.step; fTotal.step = cfg.step;
+  fActual.value = formatProgreso(it.actual || 0, cfg.step);
+  fTotal.value = it.total ? formatProgreso(it.total, cfg.step) : '';
   document.getElementById('f-notas').value = it.notas || '';
   renderStars();
   document.getElementById('modal-bg').classList.add('open');
@@ -573,17 +596,20 @@ window.editTitulo = (type, id) => {
 window.saveTitulo = async () => {
   const titulo = document.getElementById('f-titulo').value.trim();
   if(!titulo){ document.getElementById('f-titulo').focus(); return; }
+  const cfg = LIST_TYPES[currentModalType];
+  const actualVal = document.getElementById('f-actual').value;
+  const totalVal = document.getElementById('f-total').value;
   const data = {
     titulo,
     estado: document.getElementById('f-estado').value,
-    actual: parseInt(document.getElementById('f-actual').value)||0,
-    total: document.getElementById('f-total').value ? parseInt(document.getElementById('f-total').value) : null,
+    actual: parseProgreso(actualVal, cfg.step) ?? 0,
+    total: totalVal ? parseProgreso(totalVal, cfg.step) : null,
     rating: currentRating,
     notas: document.getElementById('f-notas').value.trim(),
     cover: selectedCover,
     updatedAt: new Date().toISOString()
   };
-  const colName = LIST_TYPES[currentModalType].col;
+  const colName = cfg.col;
   if(editId) await updateDoc(userDoc(colName, editId), data);
   else await addDoc(userCol(colName), {...data, createdAt: new Date().toISOString()});
   closeModal();
@@ -596,27 +622,31 @@ window.deleteTitulo = async (type, id) => {
   showToast('Eliminado');
 };
 
-window.stepProgress = async (type, id, delta) => {
+window.stepProgress = async (type, id, dir) => {
   const list = listOf(type);
   const it = list.find(x=>x.id===id);
   if(!it) return;
-  let actual = (it.actual||0) + delta;
+  const cfg = LIST_TYPES[type];
+  let actual = round2((it.actual||0) + dir*cfg.step);
+  if(cfg.step >= 1) actual = Math.trunc(actual);
   if(actual < 0) actual = 0;
   if(it.total && actual > it.total) actual = it.total;
   const updates = { actual };
   if(it.total && actual >= it.total) updates.estado = 'terminado';
   else if(actual > 0 && it.estado === 'pendiente') updates.estado = 'viendo';
-  await updateDoc(userDoc(LIST_TYPES[type].col, id), updates);
+  await updateDoc(userDoc(cfg.col, id), updates);
 };
 
 window.incrementTotal = async (type, id) => {
   const list = listOf(type);
   const it = list.find(x=>x.id===id);
   if(!it || !it.total) return;
-  const newTotal = it.total + 1;
+  const cfg = LIST_TYPES[type];
+  let newTotal = round2(it.total + cfg.step);
+  if(cfg.step >= 1) newTotal = Math.trunc(newTotal);
   const updates = { total: newTotal };
   if(it.estado === 'terminado' && (it.actual||0) < newTotal) updates.estado = 'viendo';
-  await updateDoc(userDoc(LIST_TYPES[type].col, id), updates);
+  await updateDoc(userDoc(cfg.col, id), updates);
   showToast('Añadido al total ✓');
 };
 
