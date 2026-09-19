@@ -77,6 +77,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .done-badge{background:var(--c-done-bg);color:var(--c-done-t);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
 .buy-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--c-main-t);text-decoration:none;font-weight:600;padding:6px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);transition:all .15s}
 .buy-link:hover{background:var(--border);color:var(--c-main-t)}
+.priority-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;display:inline-block;margin-top:4px}
+.priority-alta{background:rgba(239,68,68,.15);color:#fca5a5}
+.priority-media{background:rgba(245,158,11,.15);color:#fcd34d}
+.priority-baja{background:rgba(59,130,246,.15);color:#93bbfc}
 
 .empty-state{text-align:center;color:var(--text3);padding:50px 0;font-size:13px}
 .empty-state i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
@@ -89,6 +93,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .form-group label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
 .form-group input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
 .form-group input:focus{border-color:var(--border2)}
+.form-group select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-group select:focus{border-color:var(--border2)}
+.form-group select option{background:var(--bg2)}
 .form-row{display:flex;gap:8px}
 .form-row .form-group{flex:1}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
@@ -173,6 +180,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="form-group">
       <label>Enlace de compra (opcional)</label>
       <input type="text" id="it-enlace" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label>Prioridad</label>
+      <select id="it-prioridad">
+        <option value="alta">Alta</option>
+        <option value="media" selected>Media</option>
+        <option value="baja">Baja</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeItemModal()">Cancelar</button>
@@ -261,8 +276,15 @@ function pctColor(p){
   return 'var(--c-low)';
 }
 
+const PRIORITY_RANK = {alta:3, media:2, baja:1};
+const PRIORITY_LABEL = {alta:'Alta', media:'Media', baja:'Baja'};
+
 function render(){
-  const activos = itemsList.filter(i=>!i.comprado).sort((a,b)=>pct(b)-pct(a));
+  const activos = itemsList.filter(i=>!i.comprado).sort((a,b)=>{
+    const rankDiff = (PRIORITY_RANK[b.prioridad]||2) - (PRIORITY_RANK[a.prioridad]||2);
+    if(rankDiff !== 0) return rankDiff;
+    return pct(b)-pct(a);
+  });
   const comprados = itemsList.filter(i=>i.comprado).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
 
   const totalObjetivo = itemsList.reduce((s,i)=>s+(i.precio||0),0);
@@ -323,6 +345,7 @@ function renderGroup(items, isDone){
           <div>
             <div class="item-name">${esc(item.nombre)}</div>
             <div class="item-price-row"><strong>${fmtMoney(item.ahorrado||0)}</strong> de ${fmtMoney(item.precio||0)}</div>
+            <span class="priority-badge priority-${item.prioridad||'media'}">${PRIORITY_LABEL[item.prioridad]||'Media'}</span>
           </div>
           <div class="item-actions">
             ${isDone ? '' : `<button class="act-btn" onclick="openItemModal('${item.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>`}
@@ -354,6 +377,7 @@ window.openItemModal = (id) => {
   document.getElementById('it-ahorrado').value = item ? item.ahorrado : '';
   document.getElementById('it-imagen').value = item ? (item.imagenUrl||'') : '';
   document.getElementById('it-enlace').value = item ? (item.enlaceCompra||'') : '';
+  document.getElementById('it-prioridad').value = item ? (item.prioridad||'media') : 'media';
   document.getElementById('item-modal-bg').classList.add('open');
   setTimeout(()=>document.getElementById('it-nombre').focus(),60);
 };
@@ -365,12 +389,13 @@ window.saveItem = async () => {
   const ahorrado = parseFloat(document.getElementById('it-ahorrado').value) || 0;
   const imagenUrl = document.getElementById('it-imagen').value.trim();
   const enlaceCompra = document.getElementById('it-enlace').value.trim();
+  const prioridad = document.getElementById('it-prioridad').value;
   if(!nombre || !precio || precio<=0){ showToast('Indica nombre y precio'); return; }
 
   if(editingId){
-    await updateDoc(userDoc('deseos_items', editingId), {nombre, precio, ahorrado, imagenUrl, enlaceCompra});
+    await updateDoc(userDoc('deseos_items', editingId), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, prioridad});
   } else {
-    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, comprado:false, createdAt:new Date().toISOString()});
+    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, prioridad, comprado:false, createdAt:new Date().toISOString()});
   }
   closeItemModal();
   showToast('Guardado ✓');
