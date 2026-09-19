@@ -75,6 +75,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .add-save-row input{width:100px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none}
 .add-save-row button{background:var(--c-main);color:#111;border:none;border-radius:var(--radius);padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;white-space:nowrap}
 .done-badge{background:var(--c-done-bg);color:var(--c-done-t);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
+.buy-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--c-main-t);text-decoration:none;font-weight:600;padding:6px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);transition:all .15s}
+.buy-link:hover{background:var(--border);color:var(--c-main-t)}
 
 .empty-state{text-align:center;color:var(--text3);padding:50px 0;font-size:13px}
 .empty-state i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
@@ -167,6 +169,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="form-group">
       <label>URL de imagen (opcional)</label>
       <input type="text" id="it-imagen" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label>Enlace de compra (opcional)</label>
+      <input type="text" id="it-enlace" placeholder="https://...">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeItemModal()">Cancelar</button>
@@ -306,6 +312,9 @@ function renderGroup(items, isDone){
     const img = item.imagenUrl
       ? `<img class="item-img" src="${esc(item.imagenUrl)}" alt="" onerror="this.outerHTML='<div class=&quot;item-img-placeholder&quot;><i class=&quot;ti ti-gift&quot;></i></div>'">`
       : `<div class="item-img-placeholder"><i class="ti ti-gift"></i></div>`;
+    const buyLink = item.enlaceCompra
+      ? `<a class="buy-link" href="${esc(item.enlaceCompra)}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Comprar</a>`
+      : '';
     return `
     <div class="item-card ${isDone?'done':''}">
       ${img}
@@ -323,11 +332,12 @@ function renderGroup(items, isDone){
         <div class="progress-track"><div class="progress-fill" style="width:${p}%;background:${color}"></div></div>
         <div class="progress-label"><span>Progreso</span><strong style="color:${color}">${p}%</strong></div>
         ${isDone
-          ? `<span class="done-badge"><i class="ti ti-check"></i> Comprado</span>`
+          ? `<div style="display:flex;align-items:center;gap:8px"><span class="done-badge"><i class="ti ti-check"></i> Comprado</span>${buyLink}</div>`
           : `<div class="add-save-row">
               <input type="number" step="0.01" placeholder="€" class="add-input-${item.id}">
               <button onclick="addSaving('${item.id}')">Añadir ahorro</button>
               ${p>=100 ? `<button class="btn-secondary" style="padding:6px 12px" onclick="markDone('${item.id}')"><i class="ti ti-check"></i> Ya lo compré</button>` : ''}
+              ${buyLink}
             </div>`
         }
       </div>
@@ -343,6 +353,7 @@ window.openItemModal = (id) => {
   document.getElementById('it-precio').value = item ? item.precio : '';
   document.getElementById('it-ahorrado').value = item ? item.ahorrado : '';
   document.getElementById('it-imagen').value = item ? (item.imagenUrl||'') : '';
+  document.getElementById('it-enlace').value = item ? (item.enlaceCompra||'') : '';
   document.getElementById('item-modal-bg').classList.add('open');
   setTimeout(()=>document.getElementById('it-nombre').focus(),60);
 };
@@ -353,12 +364,13 @@ window.saveItem = async () => {
   const precio = parseFloat(document.getElementById('it-precio').value);
   const ahorrado = parseFloat(document.getElementById('it-ahorrado').value) || 0;
   const imagenUrl = document.getElementById('it-imagen').value.trim();
+  const enlaceCompra = document.getElementById('it-enlace').value.trim();
   if(!nombre || !precio || precio<=0){ showToast('Indica nombre y precio'); return; }
 
   if(editingId){
-    await updateDoc(userDoc('deseos_items', editingId), {nombre, precio, ahorrado, imagenUrl});
+    await updateDoc(userDoc('deseos_items', editingId), {nombre, precio, ahorrado, imagenUrl, enlaceCompra});
   } else {
-    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, comprado:false, createdAt:new Date().toISOString()});
+    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, comprado:false, createdAt:new Date().toISOString()});
   }
   closeItemModal();
   showToast('Guardado ✓');
