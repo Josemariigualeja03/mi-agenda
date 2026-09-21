@@ -41,6 +41,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:3px;font-family:inherit}
 .btn-logout:hover{color:var(--c-danger)}
 
+.tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{background:none;border:none;padding:10px 16px;cursor:pointer;color:var(--text3);font-size:14px;font-weight:600;font-family:inherit;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--c-main)}
+
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
 .summary-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:5px}
@@ -144,11 +149,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchCat('deseo')" id="tabbtn-deseo"><i class="ti ti-gift"></i> Deseos</button>
+    <button class="tab-btn" onclick="switchCat('carta')" id="tabbtn-carta"><i class="ti ti-cards"></i> Cartas y Cajas</button>
+  </div>
+
   <div class="summary-grid" id="summary-grid"></div>
 
   <div class="toolbar">
     <div></div>
-    <button class="btn-primary" style="background:var(--c-main);color:#111" onclick="openItemModal()"><i class="ti ti-plus"></i> Añadir deseo</button>
+    <button class="btn-primary" style="background:var(--c-main);color:#111" id="add-btn" onclick="openItemModal()"><i class="ti ti-plus"></i> Añadir deseo</button>
   </div>
 
   <div id="items-container"></div>
@@ -220,6 +230,7 @@ let currentUser = null;
 let itemsList = [];
 let unsubItems = null;
 let editingId = null;
+let activeCat = 'deseo';
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtMoney(n){ return n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
@@ -265,6 +276,16 @@ function subscribeData(){
   });
 }
 
+window.switchCat = (cat) => {
+  activeCat = cat;
+  document.getElementById('tabbtn-deseo').classList.toggle('active', cat==='deseo');
+  document.getElementById('tabbtn-carta').classList.toggle('active', cat==='carta');
+  document.getElementById('add-btn').innerHTML = cat==='carta'
+    ? '<i class="ti ti-plus"></i> Añadir carta/caja'
+    : '<i class="ti ti-plus"></i> Añadir deseo';
+  render();
+};
+
 function pct(item){
   if(!item.precio || item.precio<=0) return 0;
   return Math.min(100, Math.round((item.ahorrado / item.precio) * 100));
@@ -280,21 +301,22 @@ const PRIORITY_RANK = {alta:3, media:2, baja:1};
 const PRIORITY_LABEL = {alta:'Alta', media:'Media', baja:'Baja'};
 
 function render(){
-  const activos = itemsList.filter(i=>!i.comprado).sort((a,b)=>{
+  const catItems = itemsList.filter(i=>(i.categoria||'deseo')===activeCat);
+  const activos = catItems.filter(i=>!i.comprado).sort((a,b)=>{
     const rankDiff = (PRIORITY_RANK[b.prioridad]||2) - (PRIORITY_RANK[a.prioridad]||2);
     if(rankDiff !== 0) return rankDiff;
     return pct(b)-pct(a);
   });
-  const comprados = itemsList.filter(i=>i.comprado).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const comprados = catItems.filter(i=>i.comprado).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
 
-  const totalObjetivo = itemsList.reduce((s,i)=>s+(i.precio||0),0);
-  const totalAhorrado = itemsList.reduce((s,i)=>s+Math.min(i.ahorrado||0, i.precio||0),0);
+  const totalObjetivo = catItems.reduce((s,i)=>s+(i.precio||0),0);
+  const totalAhorrado = catItems.reduce((s,i)=>s+Math.min(i.ahorrado||0, i.precio||0),0);
   const pctGlobal = totalObjetivo>0 ? Math.round((totalAhorrado/totalObjetivo)*100) : 0;
 
   document.getElementById('summary-grid').innerHTML = `
     <div class="summary-card">
       <div class="summary-label">Artículos</div>
-      <div class="summary-value">${itemsList.length}</div>
+      <div class="summary-value">${catItems.length}</div>
       <div class="summary-sub">${activos.length} pendientes · ${comprados.length} comprados</div>
     </div>
     <div class="summary-card">
@@ -312,8 +334,11 @@ function render(){
   `;
 
   const container = document.getElementById('items-container');
-  if(!itemsList.length){
-    container.innerHTML = `<div class="empty-state"><i class="ti ti-gift"></i>Sin deseos todavía<br><small style="margin-top:6px;display:block">Añade lo primero que quieras comprar</small></div>`;
+  if(!catItems.length){
+    const msg = activeCat==='carta'
+      ? {icon:'ti-cards', text:'Sin cartas ni cajas todavía', sub:'Añade la primera carta o caja que quieras comprar'}
+      : {icon:'ti-gift', text:'Sin deseos todavía', sub:'Añade lo primero que quieras comprar'};
+    container.innerHTML = `<div class="empty-state"><i class="ti ${msg.icon}"></i>${msg.text}<br><small style="margin-top:6px;display:block">${msg.sub}</small></div>`;
     return;
   }
 
@@ -327,7 +352,10 @@ function render(){
 }
 
 function renderGroup(items, isDone){
-  if(!items.length && !isDone) return `<div class="empty-state"><i class="ti ti-gift"></i>Sin deseos pendientes<br><small style="margin-top:6px;display:block">Añade lo primero que quieras comprar</small></div>`;
+  if(!items.length && !isDone){
+    const msg = activeCat==='carta' ? 'Sin cartas ni cajas pendientes' : 'Sin deseos pendientes';
+    return `<div class="empty-state"><i class="ti ti-gift"></i>${msg}<br><small style="margin-top:6px;display:block">Todo lo de esta lista ya está comprado</small></div>`;
+  }
   return items.map(item=>{
     const p = pct(item);
     const color = isDone ? 'var(--c-done)' : pctColor(p);
@@ -371,7 +399,7 @@ function renderGroup(items, isDone){
 window.openItemModal = (id) => {
   editingId = id || null;
   const item = id ? itemsList.find(i=>i.id===id) : null;
-  document.getElementById('item-modal-title').textContent = item ? 'Editar deseo' : 'Añadir deseo';
+  document.getElementById('item-modal-title').textContent = item ? 'Editar' : (activeCat==='carta' ? 'Añadir carta/caja' : 'Añadir deseo');
   document.getElementById('it-nombre').value = item ? item.nombre : '';
   document.getElementById('it-precio').value = item ? item.precio : '';
   document.getElementById('it-ahorrado').value = item ? item.ahorrado : '';
@@ -395,7 +423,7 @@ window.saveItem = async () => {
   if(editingId){
     await updateDoc(userDoc('deseos_items', editingId), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, prioridad});
   } else {
-    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, prioridad, comprado:false, createdAt:new Date().toISOString()});
+    await addDoc(userCol('deseos_items'), {nombre, precio, ahorrado, imagenUrl, enlaceCompra, prioridad, categoria: activeCat, comprado:false, createdAt:new Date().toISOString()});
   }
   closeItemModal();
   showToast('Guardado ✓');
