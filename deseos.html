@@ -48,6 +48,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+
+.general-savings-box{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(20,184,166,.08));border:1px solid var(--c-done);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:20px;flex-wrap:wrap}
+.gs-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px}
+.gs-value{font-size:26px;font-weight:800;color:var(--c-done-t)}
+.gs-sub{font-size:11px;color:var(--text3);margin-top:3px}
 .summary-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:5px}
 .summary-value{font-size:18px;font-weight:700;color:var(--text)}
 .summary-sub{font-size:10px;color:var(--text3);margin-top:2px}
@@ -215,12 +220,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- Modal ahorro general -->
+<div class="modal-bg" id="gs-modal-bg" onclick="if(event.target===this)closeGeneralSavingsModal()">
+  <div class="modal">
+    <h2>Ahorro general</h2>
+    <div class="form-group">
+      <label>Cantidad (€) — usa negativo para quitar</label>
+      <input type="number" step="0.01" id="gs-cantidad" placeholder="0.00">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeGeneralSavingsModal()">Cancelar</button>
+      <button class="btn-save" style="background:var(--c-done)" onclick="applyGeneralSaving()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
@@ -238,8 +258,10 @@ const db = getFirestore(app);
 let currentUser = null;
 let itemsList = [];
 let unsubItems = null;
+let unsubGS = null;
 let editingId = null;
 let activeCat = 'deseo';
+let ahorroGeneral = 0;
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtMoney(n){ return n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
@@ -255,6 +277,7 @@ window.loginGoogle = async () => {
 };
 window.logout = async () => {
   if(unsubItems) unsubItems();
+  if(unsubGS) unsubGS();
   await signOut(auth);
 };
 
@@ -283,7 +306,28 @@ function subscribeData(){
     itemsList = snap.docs.map(d=>({id:d.id, ...d.data()}));
     render();
   });
+
+  if(unsubGS) unsubGS();
+  unsubGS = onSnapshot(userDoc('deseos_meta','config'), snap => {
+    ahorroGeneral = snap.exists() ? (snap.data().ahorroGeneral || 0) : 0;
+    document.getElementById('gs-value').textContent = fmtMoney(ahorroGeneral);
+  });
 }
+
+window.openGeneralSavingsModal = () => {
+  document.getElementById('gs-cantidad').value = '';
+  document.getElementById('gs-modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('gs-cantidad').focus(),60);
+};
+window.closeGeneralSavingsModal = () => document.getElementById('gs-modal-bg').classList.remove('open');
+window.applyGeneralSaving = async () => {
+  const cantidad = parseFloat(document.getElementById('gs-cantidad').value);
+  if(!cantidad){ showToast('Indica una cantidad'); return; }
+  const nuevoTotal = Math.max(0, ahorroGeneral + cantidad);
+  await setDoc(userDoc('deseos_meta','config'), {ahorroGeneral: nuevoTotal}, {merge:true});
+  closeGeneralSavingsModal();
+  showToast(cantidad>0 ? 'Ahorro añadido ✓' : 'Ahorro actualizado ✓');
+};
 
 window.switchCat = (cat) => {
   activeCat = cat;
@@ -461,7 +505,7 @@ window.markDone = async (id) => {
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeItemModal(); }
+  if(e.key==='Escape'){ closeItemModal(); closeGeneralSavingsModal(); }
 });
 </script>
 </body>
