@@ -124,6 +124,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .progress-diff-down{background:rgba(239,68,68,.15);color:var(--c-danger)}
 .progress-diff-flat{background:var(--bg3);color:var(--text3)}
 
+.weight-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px}
+.weight-add-row{display:flex;gap:8px;margin-bottom:16px}
+.weight-add-row input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.weight-add-row input[type="date"]{flex:1}
+.weight-add-row input[type="number"]{width:100px}
+.weight-add-row button{background:var(--c-main);color:#fff;border:none;border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;white-space:nowrap}
+.weight-entry{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:var(--radius);padding:9px 12px;margin-bottom:6px}
+.weight-entry-val{font-size:13px;font-weight:700;color:var(--text)}
+.weight-entry-date{font-size:11px;color:var(--text3);margin-left:8px}
+
+.kcal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.kcal-date{font-size:13px;font-weight:700;color:var(--text)}
+.kcal-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.kcal-val{font-size:17px;font-weight:800;color:#86efac}
+.kcal-note{font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5}
+
 .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:400;flex-direction:column;gap:12px}
 .loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-main);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -198,6 +214,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <select class="progress-select" id="progress-ex-select" onchange="renderProgressChart()"></select>
   <div class="progress-card" id="progress-card"></div>
 
+  <div class="section-title"><i class="ti ti-scale"></i> Peso corporal</div>
+  <div class="weight-card">
+    <div class="weight-add-row">
+      <input type="date" id="w-fecha">
+      <input type="number" step="0.1" id="w-peso" placeholder="kg">
+      <button onclick="saveWeight()">Guardar</button>
+    </div>
+    <div style="position:relative;width:100%;height:200px;margin-bottom:16px">
+      <canvas id="weightChartCanvas"></canvas>
+    </div>
+    <div id="weight-list"></div>
+  </div>
+
+  <div class="section-title"><i class="ti ti-flame"></i> Calorías quemadas por entreno</div>
+  <div class="kcal-note">Estimación aproximada según tu peso corporal más reciente y el número de series realizadas cada día (no es una medición exacta).</div>
+  <div id="kcal-list"></div>
+
 </div>
 </div>
 
@@ -234,11 +267,12 @@ const MUSCLES = ['Pecho','Espalda','Pierna','Hombro','Brazo','Core'];
 const MUSCLE_ICONS = {'Pecho':'ti-heart','Espalda':'ti-yoga','Pierna':'ti-shoe','Hombro':'ti-triangle','Brazo':'ti-barbell','Core':'ti-circle-dot'};
 
 let currentUser = null;
-let unsubDias = null, unsubEj = null, unsubReg = null;
+let unsubDias = null, unsubEj = null, unsubReg = null, unsubPeso = null;
 let trainedDates = new Set();
 let miniMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let exercisesList = [];   // {id, muscle, nombre}
 let registrosList = [];   // {id, fecha, muscle, ejercicioNombre, sets:[{reps,peso}]}
+let pesoList = [];        // {id, fecha, peso}
 
 // estado del modal de actividad del día
 let dayModalFecha = null;
@@ -259,7 +293,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubDias, unsubEj, unsubReg].forEach(u=>u&&u());
+  [unsubDias, unsubEj, unsubReg, unsubPeso].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -283,7 +317,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubDias, unsubEj, unsubReg].forEach(u=>u&&u());
+  [unsubDias, unsubEj, unsubReg, unsubPeso].forEach(u=>u&&u());
 
   unsubEj = onSnapshot(userCol('musculos_ejercicios'), snap => {
     exercisesList = snap.docs.map(d=>({id:d.id, ...d.data()}));
@@ -297,7 +331,15 @@ function subscribeData(){
     trainedDates = new Set(registrosList.map(r=>r.fecha));
     renderMiniAgenda();
     renderProgressSelect();
+    renderKcalList();
     if(document.getElementById('day-modal-bg').classList.contains('open')) renderDayModal();
+  });
+
+  unsubPeso = onSnapshot(userCol('peso_corporal'), snap => {
+    pesoList = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    pesoList.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    renderWeightSection();
+    renderKcalList();
   });
 }
 
@@ -634,6 +676,101 @@ window.saveWizardSets = async () => {
   dayModalStep = 'list';
   renderDayModal();
 };
+
+// ================== PESO CORPORAL ==================
+let weightChart = null;
+
+function pesoActual(){
+  if(!pesoList.length) return 70; // valor por defecto si aún no hay registros
+  return pesoList[pesoList.length-1].peso;
+}
+
+function renderWeightSection(){
+  document.getElementById('w-fecha').value = document.getElementById('w-fecha').value || new Date().toISOString().slice(0,10);
+
+  const ctx = document.getElementById('weightChartCanvas');
+  if(weightChart) weightChart.destroy();
+  weightChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: pesoList.map(p=>fmtDateEs(p.fecha)),
+      datasets:[{label:'Peso (kg)', data: pesoList.map(p=>p.peso), borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.12)', fill:true, tension:0.25, pointRadius:3, pointBackgroundColor:'#a78bfa'}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a6080',maxRotation:0,autoSkip:true},grid:{color:'#2a2f45'}},
+        y:{ticks:{color:'#5a6080',callback:v=>v+'kg'},grid:{color:'#2a2f45'}}
+      }
+    }
+  });
+
+  const list = document.getElementById('weight-list');
+  if(!pesoList.length){
+    list.innerHTML = `<div class="empty-note">Sin registros de peso todavía</div>`;
+    return;
+  }
+  const reversed = [...pesoList].reverse();
+  list.innerHTML = reversed.map((p,i)=>{
+    const prev = reversed[i+1];
+    let diffHtml = '';
+    if(prev){
+      const diff = p.peso - prev.peso;
+      if(diff !== 0) diffHtml = `<span class="${diff<0?'progress-up':'progress-down'}" style="font-size:11px;margin-left:8px">${diff>0?'+':''}${diff.toFixed(1)}kg</span>`;
+    }
+    return `
+    <div class="weight-entry">
+      <div><span class="weight-entry-val">${p.peso}kg</span>${diffHtml}<span class="weight-entry-date">${fmtDateEs(p.fecha)}</span></div>
+      <button class="chip-del" onclick="deleteWeight('${p.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+window.saveWeight = async () => {
+  const peso = parseFloat(document.getElementById('w-peso').value);
+  const fecha = document.getElementById('w-fecha').value;
+  if(!peso || peso<=0 || !fecha){ showToast('Indica fecha y peso'); return; }
+  await addDoc(userCol('peso_corporal'), {peso, fecha, createdAt:new Date().toISOString()});
+  document.getElementById('w-peso').value = '';
+  showToast('Peso registrado ✓');
+};
+
+window.deleteWeight = async (id) => {
+  if(!confirm('¿Eliminar este registro de peso?')) return;
+  await deleteDoc(userDoc('peso_corporal', id));
+  showToast('Eliminado');
+};
+
+// ================== CALORÍAS QUEMADAS POR ENTRENO ==================
+const MET_MUSCULACION = 5.0;
+const MIN_POR_SERIE = 1.5;
+
+function renderKcalList(){
+  const container = document.getElementById('kcal-list');
+  if(!container) return;
+
+  const fechas = [...new Set(registrosList.map(r=>r.fecha))].sort((a,b)=>b.localeCompare(a));
+  if(!fechas.length){
+    container.innerHTML = `<div class="empty-note">Registra ejercicios en tu agenda para ver aquí las calorías estimadas</div>`;
+    return;
+  }
+  const peso = pesoActual();
+  container.innerHTML = fechas.map(fecha=>{
+    const regs = registrosList.filter(r=>r.fecha===fecha);
+    const totalSeries = regs.reduce((s,r)=>s+r.sets.length,0);
+    const horas = (totalSeries * MIN_POR_SERIE) / 60;
+    const kcal = Math.round(MET_MUSCULACION * peso * horas);
+    return `
+    <div class="kcal-card">
+      <div>
+        <div class="kcal-date">${fmtDateEs(fecha)}</div>
+        <div class="kcal-meta">${regs.length} ejercicio${regs.length!==1?'s':''} · ${totalSeries} serie${totalSeries!==1?'s':''}</div>
+      </div>
+      <div class="kcal-val">${kcal} kcal</div>
+    </div>`;
+  }).join('');
+}
 
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ closeDayModal(); }
