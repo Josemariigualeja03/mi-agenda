@@ -69,6 +69,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 .empty-note{text-align:center;color:var(--text3);font-size:12px;padding:20px 0}
 
+.muscle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.muscle-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
+.muscle-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.exercise-chip-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.exercise-chip-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:6px;padding:6px 8px;gap:8px}
+.exercise-chip-row span{font-size:12px;color:var(--text2)}
+.chip-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px;flex-shrink:0}
+.chip-del:hover{color:var(--c-danger)}
+.add-ex-row{display:flex;gap:6px}
+.add-ex-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none;min-width:0}
+.add-ex-row button{background:var(--c-main);color:#fff;border:none;border-radius:var(--radius);width:28px;height:28px;cursor:pointer;font-size:14px;flex-shrink:0}
+.no-ex-note{font-size:11px;color:var(--text3);margin-bottom:8px}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:22px;width:440px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+.btn-cancel:hover{background:var(--bg3);color:var(--text)}
+.btn-save{padding:7px 18px;border-radius:var(--radius);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:opacity .15s;background:var(--c-main)}
+.btn-save:hover{opacity:.85}
+
+.wizard-chip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
+.wizard-chip:hover{border-color:var(--border2);color:var(--text)}
+.wizard-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.wizard-back{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;margin-bottom:14px;font-family:inherit}
+.wizard-back:hover{color:var(--text2)}
+.wizard-label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block;font-weight:500}
+.wizard-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:12px}
+
+.set-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.set-row span{font-size:12px;color:var(--text3);width:46px;flex-shrink:0}
+.set-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;color:var(--text);font-size:13px;font-family:inherit;outline:none;min-width:0}
+
+.day-log-card{background:var(--bg3);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.day-log-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.day-log-name{font-size:13px;font-weight:600;color:var(--text)}
+.day-log-muscle{font-size:10px;color:var(--c-main-t);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.day-log-sets{font-size:11px;color:var(--text2)}
+.progress-up{color:#86efac}
+.progress-down{color:var(--c-danger)}
+
 .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:400;flex-direction:column;gap:12px}
 .loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-main);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -133,10 +176,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="mini-summary-label">Constancia</div>
       </div>
     </div>
-    <div class="empty-note">Pulsa un día pasado o de hoy para marcarlo como entrenado o descanso</div>
+    <div class="empty-note">Pulsa un día pasado o de hoy para ver o registrar su actividad</div>
   </div>
 
+  <div class="section-title"><i class="ti ti-list-details"></i> Músculos y ejercicios</div>
+  <div class="muscle-grid" id="muscle-grid"></div>
+
 </div>
+</div>
+
+<!-- Modal actividad del día -->
+<div class="modal-bg" id="day-modal-bg" onclick="if(event.target===this)closeDayModal()">
+  <div class="modal">
+    <h2 id="day-modal-title">Día</h2>
+    <div id="day-modal-body"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -144,7 +198,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
@@ -160,12 +214,24 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const MONTH_NAMES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MUSCLES = ['Pecho','Espalda','Pierna','Hombro','Brazo','Core'];
+const MUSCLE_ICONS = {'Pecho':'ti-heart','Espalda':'ti-yoga','Pierna':'ti-shoe','Hombro':'ti-triangle','Brazo':'ti-barbell','Core':'ti-circle-dot'};
 
 let currentUser = null;
-let unsubDias = null;
+let unsubDias = null, unsubEj = null, unsubReg = null;
 let trainedDates = new Set();
 let miniMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let exercisesList = [];   // {id, muscle, nombre}
+let registrosList = [];   // {id, fecha, muscle, ejercicioNombre, sets:[{reps,peso}]}
 
+// estado del modal de actividad del día
+let dayModalFecha = null;
+let dayModalStep = 'list'; // list | muscle | exercise | numSets | fillSets
+let wizardMuscle = null;
+let wizardExercise = null;
+let wizardNumSets = 0;
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -177,7 +243,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  if(unsubDias) unsubDias();
+  [unsubDias, unsubEj, unsubReg].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -201,10 +267,20 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  if(unsubDias) unsubDias();
-  unsubDias = onSnapshot(userCol('entrenos_dias'), snap => {
-    trainedDates = new Set(snap.docs.filter(d=>d.data().entrenado).map(d=>d.id));
+  [unsubDias, unsubEj, unsubReg].forEach(u=>u&&u());
+
+  unsubEj = onSnapshot(userCol('musculos_ejercicios'), snap => {
+    exercisesList = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderMuscleSection();
+    if(document.getElementById('day-modal-bg').classList.contains('open')) renderDayModal();
+  });
+
+  unsubReg = onSnapshot(userCol('entrenos_registros'), snap => {
+    registrosList = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    registrosList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    trainedDates = new Set(registrosList.map(r=>r.fecha));
     renderMiniAgenda();
+    if(document.getElementById('day-modal-bg').classList.contains('open')) renderDayModal();
   });
 }
 
@@ -235,7 +311,7 @@ function renderMiniAgenda(){
       diasTranscurridos++;
       if(trained) trainedCount++;
     }
-    html += `<div class="mini-cell ${isToday?'today':''} ${isFuture?'future':''}" ${isFuture?'':`onclick="toggleDia('${fechaStr}')"`}>
+    html += `<div class="mini-cell ${isToday?'today':''} ${isFuture?'future':''}" ${isFuture?'':`onclick="openDayModal('${fechaStr}')"`}>
       <span class="mini-day-num">${d}</span>
       <span class="mini-dot ${trained?'blue':'gray'}"></span>
     </div>`;
@@ -251,16 +327,222 @@ window.changeMonth = (delta) => {
   renderMiniAgenda();
 };
 
-window.toggleDia = async (fechaStr) => {
-  const isTrained = trainedDates.has(fechaStr);
-  if(isTrained){
-    await deleteDoc(userDoc('entrenos_dias', fechaStr));
-    showToast('Marcado como descanso');
-  } else {
-    await setDoc(userDoc('entrenos_dias', fechaStr), {entrenado:true, fecha:fechaStr});
-    showToast('¡Marcado como entrenado! 💪');
-  }
+// ================== MÚSCULOS Y EJERCICIOS ==================
+function renderMuscleSection(){
+  const grid = document.getElementById('muscle-grid');
+  grid.innerHTML = MUSCLES.map(muscle=>{
+    const exs = exercisesList.filter(e=>e.muscle===muscle);
+    return `
+    <div class="muscle-card">
+      <div class="muscle-card-title"><i class="ti ${MUSCLE_ICONS[muscle]||'ti-point'}"></i> ${muscle}</div>
+      <div class="exercise-chip-list">
+        ${exs.length ? exs.map(e=>`
+          <div class="exercise-chip-row">
+            <span>${esc(e.nombre)}</span>
+            <button class="chip-del" onclick="deleteExercise('${e.id}')" aria-label="Eliminar"><i class="ti ti-x"></i></button>
+          </div>`).join('') : `<div class="no-ex-note">Sin ejercicios todavía</div>`}
+      </div>
+      <div class="add-ex-row">
+        <input type="text" placeholder="Nuevo ejercicio" class="new-ex-${muscle}" onkeydown="if(event.key==='Enter')addExercise('${muscle}')">
+        <button onclick="addExercise('${muscle}')" aria-label="Añadir"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.addExercise = async (muscle) => {
+  const input = document.querySelector('.new-ex-'+muscle);
+  const nombre = input.value.trim();
+  if(!nombre) return;
+  const exists = exercisesList.some(e=>e.muscle===muscle && e.nombre.toLowerCase()===nombre.toLowerCase());
+  if(exists){ showToast('Ese ejercicio ya existe'); return; }
+  await addDoc(userCol('musculos_ejercicios'), {muscle, nombre, createdAt:new Date().toISOString()});
+  input.value = '';
+  showToast('Ejercicio añadido ✓');
 };
+
+window.deleteExercise = async (id) => {
+  if(!confirm('¿Eliminar este ejercicio?')) return;
+  await deleteDoc(userDoc('musculos_ejercicios', id));
+  showToast('Eliminado');
+};
+
+// ================== MODAL ACTIVIDAD DEL DÍA (wizard) ==================
+function fmtDateEs(fechaStr){
+  const [y,m,d] = fechaStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+window.openDayModal = (fechaStr) => {
+  dayModalFecha = fechaStr;
+  dayModalStep = 'list';
+  wizardMuscle = null; wizardExercise = null; wizardNumSets = 0;
+  document.getElementById('day-modal-bg').classList.add('open');
+  renderDayModal();
+};
+window.closeDayModal = () => document.getElementById('day-modal-bg').classList.remove('open');
+
+function renderDayModal(){
+  document.getElementById('day-modal-title').textContent = fmtDateEs(dayModalFecha);
+  const body = document.getElementById('day-modal-body');
+
+  if(dayModalStep === 'list') return renderStepList(body);
+  if(dayModalStep === 'muscle') return renderStepMuscle(body);
+  if(dayModalStep === 'exercise') return renderStepExercise(body);
+  if(dayModalStep === 'numSets') return renderStepNumSets(body);
+  if(dayModalStep === 'fillSets') return renderStepFillSets(body);
+}
+
+function renderStepList(body){
+  const regs = registrosList.filter(r=>r.fecha===dayModalFecha);
+  body.innerHTML = `
+    <div id="day-log-list"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn-cancel" onclick="closeDayModal()">Cerrar</button>
+      <button class="btn-save" onclick="startWizard()"><i class="ti ti-plus"></i> Añadir ejercicio</button>
+    </div>
+  `;
+  const list = document.getElementById('day-log-list');
+  if(!regs.length){
+    list.innerHTML = `<div class="no-ex-note" style="text-align:center;padding:16px 0">Sin ejercicios registrados este día todavía</div>`;
+    return;
+  }
+  list.innerHTML = regs.map(r=>{
+    const prev = registrosList.find(x=>x.ejercicioNombre===r.ejercicioNombre && x.fecha<r.fecha);
+    let progressHtml = '';
+    if(prev){
+      const volNow = r.sets.reduce((s,x)=>s+x.reps*x.peso,0);
+      const volPrev = prev.sets.reduce((s,x)=>s+x.reps*x.peso,0);
+      const diff = volNow - volPrev;
+      if(diff !== 0) progressHtml = `<div class="${diff>0?'progress-up':'progress-down'}" style="font-size:11px;margin-top:4px"><i class="ti ti-trending-${diff>0?'up':'down'}"></i> ${diff>0?'+':''}${diff.toFixed(0)}kg de volumen vs sesión anterior</div>`;
+    }
+    return `
+    <div class="day-log-card">
+      <div class="day-log-top">
+        <div>
+          <span class="day-log-muscle">${esc(r.muscle)}</span>
+          <div class="day-log-name">${esc(r.ejercicioNombre)}</div>
+        </div>
+        <button class="chip-del" onclick="deleteRegistro('${r.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
+      </div>
+      <div class="day-log-sets">${r.sets.map((s,i)=>`Serie ${i+1}: ${s.reps} reps × ${s.peso}kg`).join(' · ')}</div>
+      ${progressHtml}
+    </div>`;
+  }).join('');
+}
+
+window.deleteRegistro = async (id) => {
+  if(!confirm('¿Eliminar este registro?')) return;
+  await deleteDoc(userDoc('entrenos_registros', id));
+  showToast('Eliminado');
+};
+
+window.startWizard = () => { dayModalStep = 'muscle'; renderDayModal(); };
+
+function renderStepMuscle(body){
+  body.innerHTML = `
+    <button class="wizard-back" onclick="dayModalStep='list';renderDayModal()"><i class="ti ti-arrow-left"></i> Volver</button>
+    <span class="wizard-label">¿Qué músculo has trabajado?</span>
+    <div class="wizard-chips">
+      ${MUSCLES.map(m=>`<button class="wizard-chip" onclick="pickMuscle('${m}')"><i class="ti ${MUSCLE_ICONS[m]||'ti-point'}"></i> ${m}</button>`).join('')}
+    </div>
+  `;
+}
+window.pickMuscle = (muscle) => {
+  wizardMuscle = muscle;
+  dayModalStep = 'exercise';
+  renderDayModal();
+};
+
+function renderStepExercise(body){
+  const exs = exercisesList.filter(e=>e.muscle===wizardMuscle);
+  body.innerHTML = `
+    <button class="wizard-back" onclick="dayModalStep='muscle';renderDayModal()"><i class="ti ti-arrow-left"></i> Volver</button>
+    <span class="wizard-label">Ejercicio de ${wizardMuscle}</span>
+    ${exs.length ? `<div class="wizard-chips">
+      ${exs.map(e=>`<button class="wizard-chip" onclick="pickExercise('${esc(e.nombre).replace(/'/g,"\\'")}')">${esc(e.nombre)}</button>`).join('')}
+    </div>` : `<div class="no-ex-note" style="margin-bottom:12px">Todavía no has añadido ejercicios de ${wizardMuscle}. Ve al apartado "Músculos" para añadir alguno, o escribe uno aquí:</div>`}
+    <label class="wizard-label">O escribe uno nuevo</label>
+    <div style="display:flex;gap:6px">
+      <input type="text" class="wizard-input" id="wiz-new-ex" style="margin-bottom:0" placeholder="Nombre del ejercicio">
+      <button class="btn-save" onclick="pickExerciseFromInput()">Usar</button>
+    </div>
+  `;
+}
+window.pickExercise = (nombre) => {
+  wizardExercise = nombre;
+  dayModalStep = 'numSets';
+  renderDayModal();
+};
+window.pickExerciseFromInput = async () => {
+  const nombre = document.getElementById('wiz-new-ex').value.trim();
+  if(!nombre) return;
+  const exists = exercisesList.some(e=>e.muscle===wizardMuscle && e.nombre.toLowerCase()===nombre.toLowerCase());
+  if(!exists) await addDoc(userCol('musculos_ejercicios'), {muscle:wizardMuscle, nombre, createdAt:new Date().toISOString()});
+  wizardExercise = nombre;
+  dayModalStep = 'numSets';
+  renderDayModal();
+};
+
+function renderStepNumSets(body){
+  body.innerHTML = `
+    <button class="wizard-back" onclick="dayModalStep='exercise';renderDayModal()"><i class="ti ti-arrow-left"></i> Volver</button>
+    <span class="wizard-label">${esc(wizardExercise)} — ¿Cuántas series has hecho?</span>
+    <input type="number" min="1" max="15" class="wizard-input" id="wiz-num-sets" placeholder="Ej: 4">
+    <div class="modal-actions">
+      <button class="btn-save" onclick="pickNumSets()">Continuar</button>
+    </div>
+  `;
+  setTimeout(()=>document.getElementById('wiz-num-sets').focus(),60);
+}
+window.pickNumSets = () => {
+  const n = parseInt(document.getElementById('wiz-num-sets').value);
+  if(!n || n<1){ showToast('Indica un número de series válido'); return; }
+  wizardNumSets = n;
+  dayModalStep = 'fillSets';
+  renderDayModal();
+};
+
+function renderStepFillSets(body){
+  let rows = '';
+  for(let i=1; i<=wizardNumSets; i++){
+    rows += `
+    <div class="set-row">
+      <span>Serie ${i}</span>
+      <input type="number" placeholder="Reps" id="set-reps-${i}">
+      <input type="number" step="0.5" placeholder="Peso (kg)" id="set-peso-${i}">
+    </div>`;
+  }
+  body.innerHTML = `
+    <button class="wizard-back" onclick="dayModalStep='numSets';renderDayModal()"><i class="ti ti-arrow-left"></i> Volver</button>
+    <span class="wizard-label">${esc(wizardExercise)} — reps y peso de cada serie</span>
+    ${rows}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDayModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveWizardSets()">Guardar</button>
+    </div>
+  `;
+}
+window.saveWizardSets = async () => {
+  const sets = [];
+  for(let i=1; i<=wizardNumSets; i++){
+    const reps = parseInt(document.getElementById('set-reps-'+i).value);
+    const peso = parseFloat(document.getElementById('set-peso-'+i).value);
+    if(!reps || isNaN(peso)){ showToast('Rellena reps y peso de todas las series'); return; }
+    sets.push({reps, peso});
+  }
+  await addDoc(userCol('entrenos_registros'), {
+    fecha: dayModalFecha, muscle: wizardMuscle, ejercicioNombre: wizardExercise,
+    sets, createdAt: new Date().toISOString()
+  });
+  showToast('¡Ejercicio registrado ✓!');
+  dayModalStep = 'list';
+  renderDayModal();
+};
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeDayModal(); }
+});
 </script>
 </body>
 </html>
