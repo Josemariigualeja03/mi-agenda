@@ -59,6 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .filter-chip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:5px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-family:inherit;transition:all .15s}
 .filter-chip:hover{border-color:var(--border2)}
 .filter-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.step-picker{display:flex;align-items:center;gap:6px;margin-bottom:14px;font-size:12px;color:var(--text3)}
 .btn-primary{border:none;border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;transition:opacity .15s;color:#fff}
 .btn-primary:hover{opacity:.85}
 .btn-primary.b-anime{background:var(--c-anime)}
@@ -312,6 +313,9 @@ let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList
 let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubEquipos=null, unsubSports=null;
 let editId = null, currentRating = 0, selectedCover = null;
 
+// Incremento elegido para los botones +/- del manga (0.01, 0.1 o 1)
+let mangaStep = 0.01;
+
 // Configuracion por tipo de lista (anime, manga, libro, pelicula, serie)
 const LIST_TYPES = {
   anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'eye-off', step:1 },
@@ -320,6 +324,8 @@ const LIST_TYPES = {
   pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off', step:1 },
   serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off', step:1 }
 };
+// Incremento que usan los botones +/- (en manga lo elige el usuario)
+function stepOf(type){ return type==='manga' ? mangaStep : LIST_TYPES[type].step; }
 function listOf(type){
   if(type==='anime') return animeList;
   if(type==='manga') return mangaList;
@@ -475,6 +481,11 @@ function renderListTab(content, type){
       </div>
       <button class="btn-primary b-${type}" onclick="openModal('${type}')"><i class="ti ti-plus"></i> Añadir</button>
     </div>
+    ${type==='manga' ? `
+    <div class="step-picker">
+      <span>Sumar de:</span>
+      ${[0.01,0.1,1].map(s=>`<button class="filter-chip ${mangaStep===s?'active':''}" onclick="setMangaStep(${s})">${s}</button>`).join('')}
+    </div>` : ''}
     <div class="grid" id="items-grid"></div>
   `;
   if(q) document.getElementById('search-box-'+type).classList.add('has-text');
@@ -507,7 +518,7 @@ function renderListTab(content, type){
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <span class="progress-text">${formatProgreso(it.actual||0, cfg.step)}${it.total?'/'+formatProgreso(it.total, cfg.step):''}</span>
         </div>
-        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir más al total">+${formatProgreso(cfg.step, cfg.step)} al total</button>` : ''}
+        ${it.total ? `<button class="step-btn" style="width:100%;margin-top:4px;font-size:10px;height:18px" onclick="incrementTotal('${type}','${it.id}')" title="Añadir más al total">+${formatProgreso(stepOf(type), cfg.step)} al total</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -525,6 +536,8 @@ window.onSearchType = (type, val) => {
 window.clearSearchType = (type) => { searchQuery[type]=''; renderTab(); };
 
 window.setFilter = (f) => { activeFilter = f; renderTab(); };
+
+window.setMangaStep = (s) => { mangaStep = s; renderTab(); };
 
 window.onCoverUrlInput = () => {
   const url = document.getElementById('f-cover-url').value.trim();
@@ -627,7 +640,7 @@ window.stepProgress = async (type, id, dir) => {
   const it = list.find(x=>x.id===id);
   if(!it) return;
   const cfg = LIST_TYPES[type];
-  let actual = round2((it.actual||0) + dir*cfg.step);
+  let actual = round2((it.actual||0) + dir*stepOf(type));
   if(cfg.step >= 1) actual = Math.trunc(actual);
   if(actual < 0) actual = 0;
   if(it.total && actual > it.total) actual = it.total;
@@ -642,7 +655,7 @@ window.incrementTotal = async (type, id) => {
   const it = list.find(x=>x.id===id);
   if(!it || !it.total) return;
   const cfg = LIST_TYPES[type];
-  let newTotal = round2(it.total + cfg.step);
+  let newTotal = round2(it.total + stepOf(type));
   if(cfg.step >= 1) newTotal = Math.trunc(newTotal);
   const updates = { total: newTotal };
   if(it.estado === 'terminado' && (it.actual||0) < newTotal) updates.estado = 'viendo';
