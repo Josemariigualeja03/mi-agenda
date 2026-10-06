@@ -17,7 +17,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   --c-libro:#fb923c;--c-libro-bg:rgba(251,146,60,.15);--c-libro-t:#fdba74;
   --c-pelicula:#facc15;--c-pelicula-bg:rgba(250,204,21,.15);--c-pelicula-t:#fde047;
   --c-serie:#22d3ee;--c-serie-bg:rgba(34,211,238,.15);--c-serie-t:#67e8f9;
-  --c-deporte:#22c55e;--c-deporte-bg:rgba(34,197,94,.15);--c-deporte-t:#86efac;
+  --c-ok:#22c55e;--c-ok-bg:rgba(34,197,94,.15);--c-ok-t:#86efac;
   --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
 }
 ::-webkit-scrollbar{width:6px}
@@ -43,6 +43,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:3px;font-family:inherit}
 .btn-logout:hover{color:var(--c-danger)}
 
+/* Panel "Hoy" */
+.today-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:20px}
+.today-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.today-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.today-date{font-size:12px;color:var(--text3);text-transform:capitalize}
+.today-list{display:flex;flex-direction:column;gap:6px}
+.today-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
+.today-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.today-icon.k-anime{background:var(--c-anime-bg);color:var(--c-anime-t)}
+.today-icon.k-manga{background:var(--c-manga-bg);color:var(--c-manga-t)}
+.today-icon.k-libro{background:var(--c-libro-bg);color:var(--c-libro-t)}
+.today-icon.k-pelicula{background:var(--c-pelicula-bg);color:var(--c-pelicula-t)}
+.today-icon.k-serie{background:var(--c-serie-bg);color:var(--c-serie-t)}
+.today-text{flex:1;min-width:0}
+.today-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-detail{font-size:12px;color:var(--text2)}
+.today-count{font-size:11px;font-weight:700;color:var(--c-ok-t);background:var(--c-ok-bg);border-radius:99px;padding:2px 8px;white-space:nowrap}
+.today-empty{font-size:12px;color:var(--text3);padding:6px 0}
+
 .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);overflow-x:auto}
 .tab-btn{background:none;border:none;padding:10px 16px;cursor:pointer;color:var(--text3);font-size:14px;font-weight:600;font-family:inherit;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
 .tab-btn:hover{color:var(--text2)}
@@ -52,7 +71,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab-btn.active.t-libro{border-color:var(--c-libro);color:var(--c-libro-t)}
 .tab-btn.active.t-pelicula{border-color:var(--c-pelicula);color:var(--c-pelicula-t)}
 .tab-btn.active.t-serie{border-color:var(--c-serie);color:var(--c-serie-t)}
-.tab-btn.active.t-deporte{border-color:var(--c-deporte);color:var(--c-deporte-t)}
 
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
 .filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -67,9 +85,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-primary.b-libro{background:var(--c-libro)}
 .btn-primary.b-pelicula{background:var(--c-pelicula);color:#1a1a1a}
 .btn-primary.b-serie{background:var(--c-serie);color:#1a1a1a}
-.btn-primary.b-deporte{background:var(--c-deporte)}
-.btn-secondary{border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit;background:var(--bg3);color:var(--text2);transition:all .15s}
-.btn-secondary:hover{background:var(--border);color:var(--text)}
 
 .search-box{position:relative;flex:1;max-width:260px;min-width:160px}
 .search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px 7px 32px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
@@ -88,7 +103,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;width:fit-content;text-transform:uppercase;letter-spacing:.03em}
 .status-viendo{background:var(--c-anime-bg);color:var(--c-anime-t)}
 .status-pendiente{background:rgba(154,160,184,.15);color:var(--text2)}
-.status-terminado{background:var(--c-deporte-bg);color:var(--c-deporte-t)}
+.status-terminado{background:var(--c-ok-bg);color:var(--c-ok-t)}
 .progress-row{display:flex;align-items:center;gap:6px;margin-top:auto}
 .progress-bar-bg{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
 .progress-bar-fill{height:100%;border-radius:3px;transition:width .2s}
@@ -101,23 +116,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .step-row{display:flex;align-items:center;gap:4px}
 .step-btn{width:20px;height:20px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1}
 .step-btn:hover{background:var(--border);color:var(--text)}
-
-/* Breadcrumbs para navegacion deportes */
-.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:16px;font-size:13px;flex-wrap:wrap}
-.breadcrumb-item{color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px}
-.breadcrumb-item:hover{color:var(--text2)}
-.breadcrumb-item.current{color:var(--text);font-weight:600;cursor:default}
-.breadcrumb-sep{color:var(--text3);font-size:11px}
-
-/* Tarjetas de carpeta deporte/equipo */
-.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-.folder-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:all .15s;position:relative;display:flex;flex-direction:column;gap:8px}
-.folder-card:hover{border-color:var(--c-deporte);transform:translateY(-1px)}
-.folder-icon{width:40px;height:40px;border-radius:10px;background:var(--c-deporte-bg);color:var(--c-deporte-t);display:flex;align-items:center;justify-content:center;font-size:20px}
-.folder-name{font-size:14px;font-weight:600;color:var(--text)}
-.folder-meta{font-size:12px;color:var(--text3)}
-.folder-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
-.folder-card:hover .folder-actions{opacity:1}
 
 .empty-state{text-align:center;color:var(--text3);padding:60px 0;font-size:13px}
 .empty-state i{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
@@ -156,7 +154,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @media(max-width:600px){
   .app{padding:14px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
-  .folder-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 </style>
 </head>
@@ -167,7 +164,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div id="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-title">Mi Tiempo Libre</div>
-    <div class="login-sub">Inicia sesión para acceder a tu lista de anime, manga y deportes</div>
+    <div class="login-sub">Inicia sesión para acceder a tu lista de anime, manga, libros, películas y series</div>
     <button class="btn-google" onclick="loginGoogle()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
       Continuar con Google
@@ -186,20 +183,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 
+  <!-- Lo que has visto/leído hoy -->
+  <div class="today-panel" id="today-panel"></div>
+
   <div class="tabs">
     <button class="tab-btn t-anime" onclick="switchTab('anime')" id="tabbtn-anime"><i class="ti ti-eye"></i> Anime</button>
     <button class="tab-btn t-manga" onclick="switchTab('manga')" id="tabbtn-manga"><i class="ti ti-book"></i> Manga</button>
     <button class="tab-btn t-libro" onclick="switchTab('libro')" id="tabbtn-libro"><i class="ti ti-book-2"></i> Libros</button>
     <button class="tab-btn t-pelicula" onclick="switchTab('pelicula')" id="tabbtn-pelicula"><i class="ti ti-movie"></i> Películas</button>
     <button class="tab-btn t-serie" onclick="switchTab('serie')" id="tabbtn-serie"><i class="ti ti-device-tv"></i> Series</button>
-    <button class="tab-btn t-deporte" onclick="switchTab('deporte')" id="tabbtn-deporte"><i class="ti ti-ball-football"></i> Deportes</button>
   </div>
 
   <div id="tab-content"></div>
 </div>
 </div>
 
-<!-- Modal anime/manga -->
+<!-- Modal anime/manga/libro/película/serie -->
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <h2 id="modal-title">Añadir anime</h2>
@@ -212,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
     <div class="form-group">
       <label>Título</label>
-      <input type="text" id="f-titulo" placeholder="Nombre del anime/manga">
+      <input type="text" id="f-titulo" placeholder="Nombre del título">
     </div>
     <div class="form-group">
       <label>URL de la portada (opcional)</label>
@@ -251,46 +250,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
-<!-- Modal nuevo deporte -->
-<div class="modal-bg" id="sport-modal-bg" onclick="if(event.target===this)closeSportModal()">
-  <div class="modal">
-    <h2 id="sport-modal-title">Nuevo deporte</h2>
-    <div class="form-group">
-      <label>Nombre del deporte</label>
-      <input type="text" id="s-nombre" placeholder="Ej: Fútbol, Tenis, MMA...">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeSportModal()">Cancelar</button>
-      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveSport()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal nuevo equipo/jugador -->
-<div class="modal-bg" id="equipo-modal-bg" onclick="if(event.target===this)closeEquipoModal()">
-  <div class="modal">
-    <h2 id="equipo-modal-title">Nuevo equipo/jugador</h2>
-    <div class="form-group">
-      <label>Nombre del equipo o jugador</label>
-      <input type="text" id="e-nombre" placeholder="Ej: Real Madrid, Nadal...">
-    </div>
-    <div class="form-group">
-      <label>Partidos vistos</label>
-      <input type="number" id="e-partidos" min="0" value="0">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeEquipoModal()">Cancelar</button>
-      <button class="btn-save" style="background:var(--c-deporte)" onclick="saveEquipo()">Guardar</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBY8pUuRWPngTNy7ica_kIPPn16Y_oFRvs",
@@ -308,21 +273,22 @@ const db = getFirestore(app);
 let currentUser = null;
 let activeTab = 'anime';
 let activeFilter = 'todos';
-let searchQuery = { anime:'', manga:'', libro:'', pelicula:'', serie:'', deporte:'' };
-let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList = [], equiposList = [], sportsList = [];
-let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubEquipos=null, unsubSports=null;
+let searchQuery = { anime:'', manga:'', libro:'', pelicula:'', serie:'' };
+let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList = [], activityList = [];
+let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubActivity=null;
 let editId = null, currentRating = 0, selectedCover = null;
 
 // Incremento elegido para los botones +/- del manga (0.01, 0.1 o 1)
 let mangaStep = 0.01;
 
 // Configuracion por tipo de lista (anime, manga, libro, pelicula, serie)
+// unidad / unidadPlural: como se muestra en el panel "Hoy" (ej. "Cap. 100", "Ep. 5")
 const LIST_TYPES = {
-  anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'eye-off', step:1 },
-  manga:    { col:'manga',    label:'manga',    labelCap:'Manga',     progresoLabel:'Capítulos',  estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off', step:0.01 },
-  libro:    { col:'libros',   label:'libro',    labelCap:'Libro',     progresoLabel:'Páginas',    estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off', step:1 },
-  pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off', step:1 },
-  serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off', step:1 }
+  anime:    { col:'anime',    label:'anime',    labelCap:'Anime',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'eye',      emptyIcon:'eye-off', step:1,    unidad:'Ep.',  unidadPlural:'Eps.' },
+  manga:    { col:'manga',    label:'manga',    labelCap:'Manga',     progresoLabel:'Capítulos',  estadoViendo:'Leyendo', icon:'book',     emptyIcon:'book-off', step:0.01, unidad:'Cap.', unidadPlural:'Caps.' },
+  libro:    { col:'libros',   label:'libro',    labelCap:'Libro',     progresoLabel:'Páginas',    estadoViendo:'Leyendo', icon:'book-2',   emptyIcon:'book-off', step:1,    unidad:'Pág.', unidadPlural:'Págs.' },
+  pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off', step:1,   unidad:'Min.', unidadPlural:'Mins.' },
+  serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off', step:1,   unidad:'Ep.',  unidadPlural:'Eps.' }
 };
 // Incremento que usan los botones +/- (en manga lo elige el usuario)
 function stepOf(type){ return type==='manga' ? mangaStep : LIST_TYPES[type].step; }
@@ -333,13 +299,6 @@ function listOf(type){
   if(type==='pelicula') return peliculaList;
   if(type==='serie') return serieList;
   return [];
-}
-function setListOf(type, arr){
-  if(type==='anime') animeList = arr;
-  else if(type==='manga') mangaList = arr;
-  else if(type==='libro') libroList = arr;
-  else if(type==='pelicula') peliculaList = arr;
-  else if(type==='serie') serieList = arr;
 }
 
 // Redondea a 2 decimales evitando errores de coma flotante (ej. 12.1 + 0.01 -> 12.109999...)
@@ -359,9 +318,6 @@ function formatProgreso(n, step){
   return String(n);
 }
 
-// Navegacion deportes: null = vista deportes, sportId = vista equipos/jugadores de ese deporte
-let deporteNav = { sportId: null };
-
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){
   const t=document.getElementById('toast');
@@ -374,7 +330,7 @@ window.loginGoogle = async () => {
   catch(e){ showToast('Error al iniciar sesión'); }
 };
 window.logout = async () => {
-  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubEquipos,unsubSports].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubActivity].forEach(u=>u&&u());
   await signOut(auth);
 };
 
@@ -387,10 +343,11 @@ onAuthStateChanged(auth, user => {
     document.getElementById('user-name').textContent = user.displayName || user.email;
     document.getElementById('user-avatar').src = user.photoURL || '';
     subscribeData();
+    renderToday();
     switchTab('anime');
   } else {
     currentUser = null;
-    animeList=[]; mangaList=[]; libroList=[]; peliculaList=[]; serieList=[]; equiposList=[]; sportsList=[];
+    animeList=[]; mangaList=[]; libroList=[]; peliculaList=[]; serieList=[]; activityList=[];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
@@ -400,7 +357,7 @@ function userCol(col){ return collection(db, 'users', currentUser.uid, col); }
 function userDoc(col, id){ return doc(db, 'users', currentUser.uid, col, id); }
 
 function subscribeData(){
-  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubEquipos,unsubSports].forEach(u=>u&&u());
+  [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubActivity].forEach(u=>u&&u());
   unsubAnime = onSnapshot(userCol('anime'), snap => {
     animeList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='anime') renderTab();
@@ -421,34 +378,91 @@ function subscribeData(){
     serieList = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activeTab==='serie') renderTab();
   });
-  unsubSports = onSnapshot(userCol('deportes_sports'), snap => {
-    sportsList = snap.docs.map(d=>({id:d.id,...d.data()}));
-    sportsList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
-    if(activeTab==='deporte') renderTab();
+  // Registro diario: un documento por (dia + tipo + titulo)
+  unsubActivity = onSnapshot(userCol('actividad'), snap => {
+    activityList = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderToday();
   });
-  unsubEquipos = onSnapshot(userCol('deportes_equipos'), snap => {
-    equiposList = snap.docs.map(d=>({id:d.id,...d.data()}));
-    equiposList.sort((a,b)=>a.nombre.localeCompare(b.nombre));
-    if(activeTab==='deporte') renderTab();
+}
+
+// ================== PANEL "HOY" ==================
+function todayKey(){
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function renderToday(){
+  const panel = document.getElementById('today-panel');
+  if(!panel) return;
+  const hoy = todayKey();
+  const items = activityList
+    .filter(a=>a.fecha===hoy && LIST_TYPES[a.type])
+    .sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+  const fechaTxt = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  const rows = items.map(a=>{
+    const cfg = LIST_TYPES[a.type];
+    const diff = round2(a.hasta - a.desde);
+    const unica = diff <= cfg.step + 1e-9;
+    const detalle = unica
+      ? `${cfg.unidad} ${formatProgreso(a.hasta, cfg.step)}`
+      : `${cfg.unidadPlural} ${formatProgreso(a.desde, cfg.step)} → ${formatProgreso(a.hasta, cfg.step)}`;
+    const cuenta = unica ? '' : `<span class="today-count">+${formatProgreso(diff, cfg.step)}</span>`;
+    return `
+    <div class="today-item">
+      <div class="today-icon k-${a.type}"><i class="ti ti-${cfg.icon}"></i></div>
+      <div class="today-text">
+        <div class="today-name">${esc(a.titulo)}</div>
+        <div class="today-detail">${detalle}</div>
+      </div>
+      ${cuenta}
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="today-head">
+      <span class="today-title"><i class="ti ti-calendar-event"></i> Hoy</span>
+      <span class="today-date">${fechaTxt}</span>
+    </div>
+    ${items.length
+      ? `<div class="today-list">${rows}</div>`
+      : `<div class="today-empty">Todavía no has registrado nada hoy. Pulsa + en cualquier título al terminar un capítulo o episodio.</div>`}
+  `;
+}
+
+// Registra el avance del dia para un titulo (desde el primer + del dia hasta el valor actual)
+async function logActivity(type, it, oldActual, newActual){
+  if(oldActual === newActual) return;
+  const fecha = todayKey();
+  const id = `${fecha}_${type}_${it.id}`;
+  const prev = activityList.find(a=>a.id===id);
+  let desde = prev ? prev.desde : oldActual;
+  const hasta = newActual;
+  if(hasta < desde) desde = hasta;
+  if(hasta === desde){
+    if(prev) await deleteDoc(userDoc('actividad', id));
+    return;
+  }
+  await setDoc(userDoc('actividad', id), {
+    fecha, type, itemId: it.id, titulo: it.titulo,
+    desde, hasta, updatedAt: new Date().toISOString()
   });
 }
 
 window.switchTab = (tab) => {
   activeTab = tab; activeFilter = 'todos';
-  if(tab === 'deporte') deporteNav = { sportId:null };
-  ['anime','manga','libro','pelicula','serie','deporte'].forEach(t=>{
+  ['anime','manga','libro','pelicula','serie'].forEach(t=>{
     document.getElementById('tabbtn-'+t).classList.toggle('active', t===tab);
   });
+  renderToday();
   renderTab();
 };
 
 function renderTab(){
   const content = document.getElementById('tab-content');
-  if(activeTab === 'deporte'){
-    renderDeporteTab(content);
-  } else {
-    renderListTab(content, activeTab);
-  }
+  renderListTab(content, activeTab);
 }
 
 // ================== ANIME / MANGA / LIBRO / PELICULA / SERIE (listas genericas) ==================
@@ -640,7 +654,8 @@ window.stepProgress = async (type, id, dir) => {
   const it = list.find(x=>x.id===id);
   if(!it) return;
   const cfg = LIST_TYPES[type];
-  let actual = round2((it.actual||0) + dir*stepOf(type));
+  const anterior = it.actual || 0;
+  let actual = round2(anterior + dir*stepOf(type));
   if(cfg.step >= 1) actual = Math.trunc(actual);
   if(actual < 0) actual = 0;
   if(it.total && actual > it.total) actual = it.total;
@@ -648,6 +663,7 @@ window.stepProgress = async (type, id, dir) => {
   if(it.total && actual >= it.total) updates.estado = 'terminado';
   else if(actual > 0 && it.estado === 'pendiente') updates.estado = 'viendo';
   await updateDoc(userDoc(cfg.col, id), updates);
+  await logActivity(type, it, anterior, actual);
 };
 
 window.incrementTotal = async (type, id) => {
@@ -663,188 +679,8 @@ window.incrementTotal = async (type, id) => {
   showToast('Añadido al total ✓');
 };
 
-// ================== DEPORTES (2 niveles: deporte -> equipos/jugadores) ==================
-function renderDeporteTab(content){
-  if(!deporteNav.sportId){
-    renderSportsLevel(content);
-  } else {
-    renderEquiposLevel(content);
-  }
-}
-
-function renderSportsLevel(content){
-  const q = searchQuery.deporte.toLowerCase().trim();
-  let filtered = sportsList;
-  if(q) filtered = filtered.filter(s=>s.nombre.toLowerCase().includes(q));
-
-  content.innerHTML = `
-    <div class="toolbar">
-      <div class="filter-row">
-        <div class="search-box" id="search-box-deporte">
-          <i class="ti ti-search"></i>
-          <input type="text" id="search-input-deporte" placeholder="Buscar deporte..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
-          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
-        </div>
-      </div>
-      <button class="btn-primary b-deporte" onclick="openSportModal()"><i class="ti ti-plus"></i> Nuevo deporte</button>
-    </div>
-    <div class="folder-grid" id="sports-grid"></div>
-  `;
-  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
-
-  const grid = document.getElementById('sports-grid');
-  if(!filtered.length){
-    grid.outerHTML = `<div class="empty-state"><i class="ti ti-ball-football"></i>${q?'Sin resultados':'Sin deportes todavía'}<br><small style="margin-top:6px;display:block">${q?'':'Crea un deporte (ej: Fútbol, Tenis) para empezar'}</small></div>`;
-    return;
-  }
-  const sportIcons = {futbol:'ball-football',tenis:'tennis-ball',baloncesto:'basketball',f1:'steering-wheel',mma:'karate',boxeo:'boxing-glove'};
-  grid.innerHTML = filtered.map(s=>{
-    const equiposDeporte = equiposList.filter(e=>e.sportId===s.id);
-    const nEquipos = equiposDeporte.length;
-    const nPartidos = equiposDeporte.reduce((sum,e)=>sum+(e.partidos||0),0);
-    const key = s.nombre.toLowerCase().replace(/\s/g,'');
-    const icon = sportIcons[key] || 'ball-football';
-    return `
-    <div class="folder-card" onclick="openSport('${s.id}')">
-      <div class="folder-actions">
-        <button class="card-act-btn" onclick="event.stopPropagation();editSport('${s.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
-        <button class="card-act-btn" onclick="event.stopPropagation();deleteSport('${s.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-      </div>
-      <div class="folder-icon"><i class="ti ti-${icon}"></i></div>
-      <div class="folder-name">${esc(s.nombre)}</div>
-      <div class="folder-meta">${nEquipos} equipo${nEquipos!==1?'s':''}/jugador${nEquipos!==1?'es':''} · ${nPartidos} partido${nPartidos!==1?'s':''} visto${nPartidos!==1?'s':''}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderEquiposLevel(content){
-  const sport = sportsList.find(s=>s.id===deporteNav.sportId);
-  if(!sport){ deporteNav.sportId=null; renderTab(); return; }
-  const q = searchQuery.deporte.toLowerCase().trim();
-  let filtered = equiposList.filter(e=>e.sportId===deporteNav.sportId);
-  if(q) filtered = filtered.filter(e=>e.nombre.toLowerCase().includes(q));
-
-  content.innerHTML = `
-    <div class="breadcrumb">
-      <span class="breadcrumb-item" onclick="backToSports()"><i class="ti ti-ball-football"></i> Deportes</span>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item current">${esc(sport.nombre)}</span>
-    </div>
-    <div class="toolbar">
-      <div class="filter-row">
-        <div class="search-box" id="search-box-deporte">
-          <i class="ti ti-search"></i>
-          <input type="text" id="search-input-deporte" placeholder="Buscar equipo/jugador..." value="${esc(searchQuery.deporte)}" oninput="onSearchType('deporte', this.value)">
-          <button class="clear-search" onclick="clearSearchType('deporte')"><i class="ti ti-x"></i></button>
-        </div>
-      </div>
-      <button class="btn-primary b-deporte" onclick="openEquipoModal()"><i class="ti ti-plus"></i> Nuevo equipo/jugador</button>
-    </div>
-    <div class="folder-grid" id="equipos-grid"></div>
-  `;
-  if(q) document.getElementById('search-box-deporte').classList.add('has-text');
-
-  const grid = document.getElementById('equipos-grid');
-  if(!filtered.length){
-    grid.outerHTML = `<div class="empty-state"><i class="ti ti-shirt-sport"></i>${q?'Sin resultados':'Sin equipos/jugadores en '+esc(sport.nombre)}<br><small style="margin-top:6px;display:block">${q?'':'Añade un equipo o jugador para empezar a contar partidos vistos'}</small></div>`;
-    return;
-  }
-  grid.innerHTML = filtered.map(e=>{
-    const n = e.partidos||0;
-    return `
-    <div class="folder-card" style="cursor:default">
-      <div class="folder-actions">
-        <button class="card-act-btn" onclick="event.stopPropagation();editEquipo('${e.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
-        <button class="card-act-btn" onclick="event.stopPropagation();deleteEquipo('${e.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
-      </div>
-      <div class="folder-icon"><i class="ti ti-shirt-sport"></i></div>
-      <div class="folder-name">${esc(e.nombre)}</div>
-      <div class="folder-meta">${n} partido${n!==1?'s':''} visto${n!==1?'s':''}</div>
-      <div class="step-row">
-        <button class="step-btn" onclick="stepPartidos('${e.id}',-1)" aria-label="Restar partido">−</button>
-        <button class="step-btn" style="width:auto;padding:0 10px" onclick="stepPartidos('${e.id}',1)" aria-label="Sumar partido"><i class="ti ti-plus" style="font-size:11px"></i> Partido visto</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.backToSports = () => { deporteNav={sportId:null}; activeFilter='todos'; searchQuery.deporte=''; renderTab(); };
-window.openSport = (id) => { deporteNav.sportId=id; searchQuery.deporte=''; renderTab(); };
-
-// --- Modal deporte (carpeta) ---
-window.openSportModal = () => {
-  editId = null;
-  document.getElementById('sport-modal-title').textContent = 'Nuevo deporte';
-  document.getElementById('s-nombre').value = '';
-  document.getElementById('sport-modal-bg').classList.add('open');
-  setTimeout(()=>document.getElementById('s-nombre').focus(),60);
-};
-window.closeSportModal = () => document.getElementById('sport-modal-bg').classList.remove('open');
-window.editSport = (id) => {
-  const s = sportsList.find(x=>x.id===id); if(!s) return;
-  editId = id;
-  document.getElementById('sport-modal-title').textContent = 'Editar deporte';
-  document.getElementById('s-nombre').value = s.nombre;
-  document.getElementById('sport-modal-bg').classList.add('open');
-};
-window.saveSport = async () => {
-  const nombre = document.getElementById('s-nombre').value.trim();
-  if(!nombre) return;
-  if(editId) await updateDoc(userDoc('deportes_sports', editId), {nombre});
-  else await addDoc(userCol('deportes_sports'), {nombre, createdAt:new Date().toISOString()});
-  closeSportModal();
-  showToast(editId?'Actualizado':'Deporte añadido ✓');
-};
-window.deleteSport = async (id) => {
-  const nE = equiposList.filter(e=>e.sportId===id).length;
-  if(nE>0){ showToast(`Primero elimina los ${nE} equipo(s)/jugador(es) de este deporte`); return; }
-  if(!confirm('¿Eliminar este deporte?')) return;
-  await deleteDoc(userDoc('deportes_sports', id));
-  showToast('Eliminado');
-};
-
-// --- Modal equipo/jugador ---
-window.openEquipoModal = () => {
-  editId = null;
-  document.getElementById('equipo-modal-title').textContent = 'Nuevo equipo/jugador';
-  document.getElementById('e-nombre').value = '';
-  document.getElementById('e-partidos').value = 0;
-  document.getElementById('equipo-modal-bg').classList.add('open');
-  setTimeout(()=>document.getElementById('e-nombre').focus(),60);
-};
-window.closeEquipoModal = () => document.getElementById('equipo-modal-bg').classList.remove('open');
-window.editEquipo = (id) => {
-  const e = equiposList.find(x=>x.id===id); if(!e) return;
-  editId = id;
-  document.getElementById('equipo-modal-title').textContent = 'Editar equipo/jugador';
-  document.getElementById('e-nombre').value = e.nombre;
-  document.getElementById('e-partidos').value = e.partidos || 0;
-  document.getElementById('equipo-modal-bg').classList.add('open');
-};
-window.saveEquipo = async () => {
-  const nombre = document.getElementById('e-nombre').value.trim();
-  if(!nombre){ document.getElementById('e-nombre').focus(); return; }
-  const partidos = parseInt(document.getElementById('e-partidos').value)||0;
-  if(editId) await updateDoc(userDoc('deportes_equipos', editId), {nombre, partidos});
-  else await addDoc(userCol('deportes_equipos'), {nombre, partidos, sportId: deporteNav.sportId, createdAt:new Date().toISOString()});
-  closeEquipoModal();
-  showToast(editId?'Actualizado':'Equipo/jugador añadido ✓');
-};
-window.deleteEquipo = async (id) => {
-  if(!confirm('¿Eliminar este equipo/jugador?')) return;
-  await deleteDoc(userDoc('deportes_equipos', id));
-  showToast('Eliminado');
-};
-window.stepPartidos = async (id, delta) => {
-  const e = equiposList.find(x=>x.id===id);
-  if(!e) return;
-  let partidos = (e.partidos||0) + delta;
-  if(partidos < 0) partidos = 0;
-  await updateDoc(userDoc('deportes_equipos', id), {partidos});
-};
-
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeSportModal(); closeEquipoModal(); }
+  if(e.key==='Escape'){ closeModal(); }
 });
 </script>
 </body>
