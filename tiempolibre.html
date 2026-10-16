@@ -43,11 +43,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:3px;font-family:inherit}
 .btn-logout:hover{color:var(--c-danger)}
 
-/* Panel "Hoy" */
+/* Panel "Hoy" / historial */
 .today-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:20px}
-.today-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.today-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .today-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
-.today-date{font-size:12px;color:var(--text3);text-transform:capitalize}
+.today-date{font-size:12px;color:var(--text3);text-transform:capitalize;margin-left:4px;font-weight:400}
+.day-nav{display:flex;align-items:center;gap:6px}
+.day-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:15px;font-family:inherit;transition:all .15s}
+.day-btn:hover:not(:disabled){border-color:var(--border2);color:var(--text)}
+.day-btn:disabled{opacity:.35;cursor:default}
+.day-today-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);height:28px;padding:0 10px;cursor:pointer;color:var(--text2);font-size:12px;font-family:inherit;transition:all .15s}
+.day-today-btn:hover{border-color:var(--border2);color:var(--text)}
+.day-date-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);height:28px;padding:0 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none;color-scheme:dark}
+.day-date-input:focus{border-color:var(--border2)}
+.day-strip{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.day-chip{flex:1;min-width:46px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:5px 4px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;transition:all .15s}
+.day-chip:hover{border-color:var(--border2)}
+.day-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.day-chip-wd{font-size:10px;text-transform:uppercase;letter-spacing:.03em;opacity:.8}
+.day-chip-n{font-size:13px;font-weight:700}
+.day-chip-count{font-size:10px;font-weight:700;color:var(--c-ok-t);height:12px}
+.day-chip.active .day-chip-count{color:#15803d}
 .today-list{display:flex;flex-direction:column;gap:6px}
 .today-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
 .today-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
@@ -183,7 +199,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 
-  <!-- Lo que has visto/leído hoy -->
+  <!-- Lo que has visto/leído (hoy o en días anteriores) -->
   <div class="today-panel" id="today-panel"></div>
 
   <div class="tabs">
@@ -278,6 +294,9 @@ let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList
 let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubActivity=null;
 let editId = null, currentRating = 0, selectedCover = null;
 
+// Dia que se muestra en el panel de actividad (null = hoy)
+let viewDate = null;
+
 // Incremento elegido para los botones +/- del manga (0.01, 0.1 o 1)
 let mangaStep = 0.01;
 
@@ -342,6 +361,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('app-screen').style.display = 'block';
     document.getElementById('user-name').textContent = user.displayName || user.email;
     document.getElementById('user-avatar').src = user.photoURL || '';
+    viewDate = null;
     subscribeData();
     renderToday();
     switchTab('anime');
@@ -385,22 +405,59 @@ function subscribeData(){
   });
 }
 
-// ================== PANEL "HOY" ==================
-function todayKey(){
-  const d = new Date();
+// ================== PANEL DE ACTIVIDAD (HOY + DIAS ANTERIORES) ==================
+function keyFromDate(d){
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   return `${d.getFullYear()}-${m}-${day}`;
+}
+function dateFromKey(k){
+  const [y,m,d] = k.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function todayKey(){ return keyFromDate(new Date()); }
+function viewKey(){ return viewDate || todayKey(); }
+function addDays(key, n){
+  const d = dateFromKey(key);
+  d.setDate(d.getDate()+n);
+  return keyFromDate(d);
+}
+function setViewDate(key){
+  const hoy = todayKey();
+  if(!key) return;
+  if(key >= hoy) viewDate = null;   // no se puede ver el futuro
+  else viewDate = key;
+  renderToday();
+}
+
+window.shiftDay = (n) => setViewDate(addDays(viewKey(), n));
+window.goToday = () => { viewDate = null; renderToday(); };
+window.pickDay = (val) => { if(val) setViewDate(val); };
+
+function countForDay(key){
+  return activityList.filter(a=>a.fecha===key && LIST_TYPES[a.type]).length;
+}
+
+function dayTitle(key){
+  const hoy = todayKey();
+  if(key===hoy) return 'Hoy';
+  if(key===addDays(hoy,-1)) return 'Ayer';
+  return 'Registro';
 }
 
 function renderToday(){
   const panel = document.getElementById('today-panel');
   if(!panel) return;
   const hoy = todayKey();
+  const key = viewKey();
+  const esHoy = key===hoy;
   const items = activityList
-    .filter(a=>a.fecha===hoy && LIST_TYPES[a.type])
+    .filter(a=>a.fecha===key && LIST_TYPES[a.type])
     .sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
-  const fechaTxt = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  const fecha = dateFromKey(key);
+  const optsFecha = {weekday:'long',day:'numeric',month:'long'};
+  if(fecha.getFullYear() !== new Date().getFullYear()) optsFecha.year = 'numeric';
+  const fechaTxt = fecha.toLocaleDateString('es-ES', optsFecha);
 
   const rows = items.map(a=>{
     const cfg = LIST_TYPES[a.type];
@@ -421,16 +478,42 @@ function renderToday(){
     </div>`;
   }).join('');
 
+  // Tira con los ultimos 7 dias (el ultimo es hoy)
+  const wd = ['dom','lun','mar','mié','jue','vie','sáb'];
+  let strip = '';
+  for(let i=6;i>=0;i--){
+    const k = addDays(hoy, -i);
+    const d = dateFromKey(k);
+    const n = countForDay(k);
+    strip += `
+      <button class="day-chip ${k===key?'active':''}" onclick="setViewDayKey('${k}')" title="${n} título${n===1?'':'s'}">
+        <span class="day-chip-wd">${i===0?'hoy':wd[d.getDay()]}</span>
+        <span class="day-chip-n">${d.getDate()}</span>
+        <span class="day-chip-count">${n?('● '+n):''}</span>
+      </button>`;
+  }
+
+  const vacio = esHoy
+    ? 'Todavía no has registrado nada hoy. Pulsa + en cualquier título al terminar un capítulo o episodio.'
+    : 'No registraste nada este día.';
+
   panel.innerHTML = `
     <div class="today-head">
-      <span class="today-title"><i class="ti ti-calendar-event"></i> Hoy</span>
-      <span class="today-date">${fechaTxt}</span>
+      <span class="today-title"><i class="ti ti-calendar-event"></i> ${dayTitle(key)}<span class="today-date">${fechaTxt}</span></span>
+      <div class="day-nav">
+        <button class="day-btn" onclick="shiftDay(-1)" title="Día anterior" aria-label="Día anterior"><i class="ti ti-chevron-left"></i></button>
+        <input type="date" class="day-date-input" value="${key}" max="${hoy}" onchange="pickDay(this.value)" aria-label="Elegir fecha">
+        <button class="day-btn" onclick="shiftDay(1)" title="Día siguiente" aria-label="Día siguiente" ${esHoy?'disabled':''}><i class="ti ti-chevron-right"></i></button>
+        ${esHoy ? '' : '<button class="day-today-btn" onclick="goToday()">Hoy</button>'}
+      </div>
     </div>
+    <div class="day-strip">${strip}</div>
     ${items.length
       ? `<div class="today-list">${rows}</div>`
-      : `<div class="today-empty">Todavía no has registrado nada hoy. Pulsa + en cualquier título al terminar un capítulo o episodio.</div>`}
+      : `<div class="today-empty">${vacio}</div>`}
   `;
 }
+window.setViewDayKey = (k) => setViewDate(k);
 
 // Registra el avance del dia para un titulo (desde el primer + del dia hasta el valor actual)
 async function logActivity(type, it, oldActual, newActual){
