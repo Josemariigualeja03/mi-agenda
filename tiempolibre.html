@@ -116,10 +116,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card-cover-placeholder{width:100%;aspect-ratio:2/3;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:32px}
 .card-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
 .card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-badges{display:flex;gap:4px;flex-wrap:wrap}
 .card-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-block;width:fit-content;text-transform:uppercase;letter-spacing:.03em}
 .status-viendo{background:var(--c-anime-bg);color:var(--c-anime-t)}
 .status-pendiente{background:rgba(154,160,184,.15);color:var(--text2)}
 .status-terminado{background:var(--c-ok-bg);color:var(--c-ok-t)}
+.status-aldia{background:var(--c-serie-bg);color:var(--c-serie-t)}
+.badge-temporada{background:var(--c-pelicula-bg);color:var(--c-pelicula-t)}
 .progress-row{display:flex;align-items:center;gap:6px;margin-top:auto}
 .progress-bar-bg{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
 .progress-bar-fill{height:100%;border-radius:3px;transition:width .2s}
@@ -140,6 +143,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .modal-bg.open{display:flex}
 .modal{background:var(--bg2);border-radius:var(--radius-lg);border:1px solid var(--border2);padding:22px;width:420px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
 .modal h2{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.modal p{font-size:13px;color:var(--text2);line-height:1.5}
 .form-group{margin-bottom:11px}
 .form-group label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
 .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
@@ -148,6 +152,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .form-group select option{background:var(--bg2)}
 .form-row{display:flex;gap:8px}
 .form-row .form-group{flex:1}
+.check-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)}
+.check-row input{width:16px;height:16px;accent-color:var(--c-anime);cursor:pointer}
+.form-group .check-row label{margin:0;font-size:13px;color:var(--text);cursor:pointer;flex:1}
+.form-group .check-row input{width:16px;padding:0}
 .cover-preview{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .cover-preview img{width:50px;height:70px;object-fit:cover;border-radius:6px;background:var(--bg3)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
@@ -155,6 +163,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-cancel:hover{background:var(--bg3);color:var(--text)}
 .btn-save{padding:7px 18px;border-radius:var(--radius);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:opacity .15s}
 .btn-save:hover{opacity:.85}
+.btn-ok{background:var(--c-ok)}
+.btn-aldia{background:var(--c-serie);color:#1a1a1a}
 .stars-input{display:flex;gap:4px;font-size:20px;cursor:pointer}
 .stars-input i{color:var(--border2)}
 .stars-input i.filled{color:#fcd34d}
@@ -240,6 +250,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
           <option value="viendo">Viendo / Leyendo</option>
           <option value="pendiente">Pendiente</option>
           <option value="terminado">Terminado</option>
+          <option value="aldia" id="opt-aldia">Al día</option>
         </select>
       </div>
       <div class="form-group">
@@ -249,6 +260,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
           <span style="align-self:center;color:var(--text3)">/</span>
           <input type="number" id="f-total" min="0" placeholder="Total" style="width:70px">
         </div>
+      </div>
+    </div>
+    <div class="form-group" id="temporada-group" style="display:none">
+      <div class="check-row" onclick="if(event.target.tagName!=='INPUT'&&event.target.tagName!=='LABEL'){const c=document.getElementById('f-temporada');c.checked=!c.checked}">
+        <input type="checkbox" id="f-temporada">
+        <label for="f-temporada">De temporada (emisión actual)</label>
       </div>
     </div>
     <div class="form-group">
@@ -262,6 +279,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-save" id="btn-save" onclick="saveTitulo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: manga llegó al último capítulo -->
+<div class="modal-bg" id="finish-bg">
+  <div class="modal">
+    <h2>Has llegado al último capítulo</h2>
+    <p id="finish-text">¿Este manga está terminado o está al día?</p>
+    <div class="modal-actions" style="flex-wrap:wrap">
+      <button class="btn-cancel" onclick="answerFinish(null)">Todavía no</button>
+      <button class="btn-save btn-aldia" onclick="answerFinish('aldia')">Al día</button>
+      <button class="btn-save btn-ok" onclick="answerFinish('terminado')">Terminado</button>
     </div>
   </div>
 </div>
@@ -294,6 +324,9 @@ let animeList = [], mangaList = [], libroList = [], peliculaList = [], serieList
 let unsubAnime=null, unsubManga=null, unsubLibro=null, unsubPelicula=null, unsubSerie=null, unsubActivity=null;
 let editId = null, currentRating = 0, selectedCover = null;
 
+// Manga pendiente de la pregunta "¿terminado o al día?"
+let finishPending = null;
+
 // Dia que se muestra en el panel de actividad (null = hoy)
 let viewDate = null;
 
@@ -318,6 +351,12 @@ function listOf(type){
   if(type==='pelicula') return peliculaList;
   if(type==='serie') return serieList;
   return [];
+}
+// Texto del estado segun el tipo
+function estadoLabel(type, estado){
+  if(estado==='viendo') return LIST_TYPES[type].estadoViendo;
+  if(estado==='aldia') return 'Al día';
+  return estado;
 }
 
 // Redondea a 2 decimales evitando errores de coma flotante (ej. 12.1 + 0.01 -> 12.109999...)
@@ -553,14 +592,19 @@ function renderListTab(content, type){
   const cfg = LIST_TYPES[type];
   const list = listOf(type);
   const q = searchQuery[type].toLowerCase().trim();
-  let filtered = activeFilter==='todos' ? list : list.filter(it=>it.estado===activeFilter);
+  let filtered;
+  if(activeFilter==='todos') filtered = list;
+  else if(activeFilter==='temporada') filtered = list.filter(it=>it.temporada);
+  else filtered = list.filter(it=>it.estado===activeFilter);
   if(q) filtered = filtered.filter(it=>it.titulo.toLowerCase().includes(q));
 
   const counts = {
     todos: list.length,
     viendo: list.filter(i=>i.estado==='viendo').length,
     pendiente: list.filter(i=>i.estado==='pendiente').length,
-    terminado: list.filter(i=>i.estado==='terminado').length
+    terminado: list.filter(i=>i.estado==='terminado').length,
+    aldia: list.filter(i=>i.estado==='aldia').length,
+    temporada: list.filter(i=>i.temporada).length
   };
 
   content.innerHTML = `
@@ -575,6 +619,8 @@ function renderListTab(content, type){
         <button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${cfg.estadoViendo} (${counts.viendo})</button>
         <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendiente (${counts.pendiente})</button>
         <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Terminado (${counts.terminado})</button>
+        ${type==='manga' ? `<button class="filter-chip ${activeFilter==='aldia'?'active':''}" onclick="setFilter('aldia')">Al día (${counts.aldia})</button>` : ''}
+        ${type==='anime' ? `<button class="filter-chip ${activeFilter==='temporada'?'active':''}" onclick="setFilter('temporada')">En temporada (${counts.temporada})</button>` : ''}
       </div>
       <button class="btn-primary b-${type}" onclick="openModal('${type}')"><i class="ti ti-plus"></i> Añadir</button>
     </div>
@@ -606,7 +652,10 @@ function renderListTab(content, type){
       ${it.cover ? `<img class="card-cover" src="${it.cover}" alt="${esc(it.titulo)}">` : `<div class="card-cover-placeholder"><i class="ti ti-${cfg.icon}"></i></div>`}
       <div class="card-body">
         <div class="card-title">${esc(it.titulo)}</div>
-        <span class="card-status status-${it.estado}">${it.estado==='viendo'?cfg.estadoViendo:it.estado}</span>
+        <div class="card-badges">
+          <span class="card-status status-${it.estado}">${estadoLabel(type, it.estado)}</span>
+          ${type==='anime' && it.temporada ? `<span class="card-status badge-temporada"><i class="ti ti-calendar-event" style="font-size:10px"></i> Temporada</span>` : ''}
+        </div>
         <div class="progress-row">
           <div class="step-row">
             <button class="step-btn" onclick="stepProgress('${type}','${it.id}',-1)" aria-label="Restar">−</button>
@@ -649,16 +698,28 @@ window.clearCover = () => {
   document.getElementById('cover-preview').style.display = 'none';
 };
 
+// Muestra u oculta los campos que solo existen en algunos tipos
+function setupTypeFields(type){
+  // "Al día" solo en manga
+  const optAldia = document.getElementById('opt-aldia');
+  optAldia.hidden = type!=='manga';
+  optAldia.disabled = type!=='manga';
+  // "De temporada" solo en anime
+  document.getElementById('temporada-group').style.display = type==='anime' ? 'block' : 'none';
+}
+
 let currentModalType = 'anime';
 window.openModal = (type) => {
   currentModalType = type; editId = null; selectedCover = null; currentRating = 0;
   const cfg = LIST_TYPES[type];
+  setupTypeFields(type);
   document.getElementById('modal-title').textContent = 'Añadir ' + cfg.label;
   document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value='';
   document.getElementById('cover-preview').style.display='none';
   document.getElementById('f-titulo').value='';
   document.getElementById('f-estado').value='pendiente';
+  document.getElementById('f-temporada').checked = false;
   const fActual = document.getElementById('f-actual');
   const fTotal = document.getElementById('f-total');
   fActual.step = cfg.step; fTotal.step = cfg.step;
@@ -682,6 +743,7 @@ window.editTitulo = (type, id) => {
   if(!it) return;
   currentModalType = type; editId = id; selectedCover = it.cover || null; currentRating = it.rating || 0;
   const cfg = LIST_TYPES[type];
+  setupTypeFields(type);
   document.getElementById('modal-title').textContent = 'Editar';
   document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value = it.cover || '';
@@ -693,6 +755,7 @@ window.editTitulo = (type, id) => {
   }
   document.getElementById('f-titulo').value = it.titulo;
   document.getElementById('f-estado').value = it.estado;
+  document.getElementById('f-temporada').checked = !!it.temporada;
   const fActual = document.getElementById('f-actual');
   const fTotal = document.getElementById('f-total');
   fActual.step = cfg.step; fTotal.step = cfg.step;
@@ -719,6 +782,7 @@ window.saveTitulo = async () => {
     cover: selectedCover,
     updatedAt: new Date().toISOString()
   };
+  if(currentModalType==='anime') data.temporada = document.getElementById('f-temporada').checked;
   const colName = cfg.col;
   if(editId) await updateDoc(userDoc(colName, editId), data);
   else await addDoc(userCol(colName), {...data, createdAt: new Date().toISOString()});
@@ -743,10 +807,39 @@ window.stepProgress = async (type, id, dir) => {
   if(actual < 0) actual = 0;
   if(it.total && actual > it.total) actual = it.total;
   const updates = { actual };
-  if(it.total && actual >= it.total) updates.estado = 'terminado';
-  else if(actual > 0 && it.estado === 'pendiente') updates.estado = 'viendo';
+  const llegaAlFinal = it.total && actual >= it.total;
+  let preguntar = false;
+
+  if(llegaAlFinal){
+    if(type==='manga'){
+      // En manga se pregunta: ¿terminado o al día?
+      // Solo si antes no estaba ya en el final y no está ya marcado como terminado / al día.
+      if(anterior < it.total && it.estado !== 'terminado' && it.estado !== 'aldia') preguntar = true;
+    } else {
+      updates.estado = 'terminado';
+    }
+  } else if(actual > 0 && it.estado === 'pendiente'){
+    updates.estado = 'viendo';
+  }
   await updateDoc(userDoc(cfg.col, id), updates);
   await logActivity(type, it, anterior, actual);
+  if(preguntar) askMangaFinish(it);
+};
+
+// ---- Pregunta al llegar al último capítulo de un manga ----
+function askMangaFinish(it){
+  finishPending = it.id;
+  document.getElementById('finish-text').textContent =
+    `Has llegado al último capítulo de "${it.titulo}". ¿Está terminado o está al día (esperando nuevos capítulos)?`;
+  document.getElementById('finish-bg').classList.add('open');
+}
+window.answerFinish = async (estado) => {
+  document.getElementById('finish-bg').classList.remove('open');
+  const id = finishPending;
+  finishPending = null;
+  if(!id || !estado) return;   // "Todavía no": se queda como estaba
+  await updateDoc(userDoc(LIST_TYPES.manga.col, id), { estado, updatedAt: new Date().toISOString() });
+  showToast(estado==='aldia' ? 'Movido a Al día ✓' : 'Movido a Terminado ✓');
 };
 
 window.incrementTotal = async (type, id) => {
@@ -757,13 +850,14 @@ window.incrementTotal = async (type, id) => {
   let newTotal = round2(it.total + stepOf(type));
   if(cfg.step >= 1) newTotal = Math.trunc(newTotal);
   const updates = { total: newTotal };
-  if(it.estado === 'terminado' && (it.actual||0) < newTotal) updates.estado = 'viendo';
+  // Si había un capítulo nuevo, deja de estar terminado / al día
+  if((it.estado === 'terminado' || it.estado === 'aldia') && (it.actual||0) < newTotal) updates.estado = 'viendo';
   await updateDoc(userDoc(cfg.col, id), updates);
   showToast('Añadido al total ✓');
 };
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); }
+  if(e.key==='Escape'){ closeModal(); if(finishPending) answerFinish(null); }
 });
 </script>
 </body>
