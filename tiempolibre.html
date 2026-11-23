@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   --c-ok:#22c55e;--c-ok-bg:rgba(34,197,94,.15);--c-ok-t:#86efac;
   --c-danger:#ef4444;--radius:8px;--radius-lg:12px;
 }
-::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
@@ -56,14 +56,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .day-today-btn:hover{border-color:var(--border2);color:var(--text)}
 .day-date-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);height:28px;padding:0 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none;color-scheme:dark}
 .day-date-input:focus{border-color:var(--border2)}
-.day-strip{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
-.day-chip{flex:1;min-width:46px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:5px 4px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;transition:all .15s}
+
+/* Calendario desplazable + récords al lado */
+.day-row{display:flex;gap:10px;align-items:stretch;margin-bottom:10px}
+.day-strip{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;position:relative;padding-bottom:6px}
+.day-chip{flex:0 0 auto;min-width:52px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:5px 4px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;transition:all .15s}
 .day-chip:hover{border-color:var(--border2)}
 .day-chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
 .day-chip-wd{font-size:10px;text-transform:uppercase;letter-spacing:.03em;opacity:.8}
 .day-chip-n{font-size:13px;font-weight:700}
+.day-chip-mo{font-size:10px;text-transform:uppercase;opacity:.6}
 .day-chip-count{font-size:10px;font-weight:700;color:var(--c-ok-t);height:12px}
 .day-chip.active .day-chip-count{color:#15803d}
+.records{display:flex;gap:6px;flex-shrink:0}
+.record{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;min-width:128px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:1px;transition:border-color .15s}
+.record:hover{border-color:var(--border2)}
+.record.empty{cursor:default}
+.record-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text3);display:flex;align-items:center;gap:4px}
+.record-label i{color:#fcd34d;font-size:12px}
+.record-val{font-size:16px;font-weight:700;color:var(--text)}
+.record-sub{font-size:11px;color:var(--text2);text-transform:capitalize}
+
 .today-list{display:flex;flex-direction:column;gap:6px}
 .today-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
 .today-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
@@ -180,6 +193,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @media(max-width:600px){
   .app{padding:14px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .day-row{flex-direction:column}
+  .records{width:100%}
+  .record{flex:1;min-width:0}
 }
 </style>
 </head>
@@ -247,7 +263,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="form-group">
         <label>Estado</label>
         <select id="f-estado">
-          <option value="viendo">Viendo / Leyendo</option>
+          <option value="viendo" id="opt-viendo">Viendo / Leyendo</option>
           <option value="pendiente">Pendiente</option>
           <option value="terminado">Terminado</option>
           <option value="aldia" id="opt-aldia">Al día</option>
@@ -330,6 +346,9 @@ let finishPending = null;
 // Dia que se muestra en el panel de actividad (null = hoy)
 let viewDate = null;
 
+// Posicion del scroll horizontal del calendario (null = aun no se ha colocado, se pone en hoy)
+let stripScroll = null;
+
 // Incremento elegido para los botones +/- del manga (0.01, 0.1 o 1)
 let mangaStep = 0.01;
 
@@ -342,6 +361,9 @@ const LIST_TYPES = {
   pelicula: { col:'peliculas',label:'película', labelCap:'Película',  progresoLabel:'Minutos',    estadoViendo:'Viendo',  icon:'movie',    emptyIcon:'movie-off', step:1,   unidad:'Min.', unidadPlural:'Mins.' },
   serie:    { col:'series',   label:'serie',    labelCap:'Serie',     progresoLabel:'Episodios',  estadoViendo:'Viendo',  icon:'device-tv',emptyIcon:'movie-off', step:1,   unidad:'Ep.',  unidadPlural:'Eps.' }
 };
+// Tipos cuyo avance cuenta como "capítulos" para el récord del calendario (libros = páginas y películas = minutos no cuentan)
+const CAP_TYPES = ['anime','manga','serie'];
+
 // Incremento que usan los botones +/- (en manga lo elige el usuario)
 function stepOf(type){ return type==='manga' ? mangaStep : LIST_TYPES[type].step; }
 function listOf(type){
@@ -351,6 +373,11 @@ function listOf(type){
   if(type==='pelicula') return peliculaList;
   if(type==='serie') return serieList;
   return [];
+}
+// Las películas no tienen estado "viendo": si alguna lo tenía guardado, se trata como pendiente
+function efectivoEstado(type, estado){
+  if(type==='pelicula' && estado==='viendo') return 'pendiente';
+  return estado;
 }
 // Texto del estado segun el tipo
 function estadoLabel(type, estado){
@@ -389,6 +416,7 @@ window.loginGoogle = async () => {
 };
 window.logout = async () => {
   [unsubAnime,unsubManga,unsubLibro,unsubPelicula,unsubSerie,unsubActivity].forEach(u=>u&&u());
+  stripScroll = null;
   await signOut(auth);
 };
 
@@ -401,6 +429,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('user-name').textContent = user.displayName || user.email;
     document.getElementById('user-avatar').src = user.photoURL || '';
     viewDate = null;
+    stripScroll = null;
     subscribeData();
     renderToday();
     switchTab('anime');
@@ -473,10 +502,6 @@ window.shiftDay = (n) => setViewDate(addDays(viewKey(), n));
 window.goToday = () => { viewDate = null; renderToday(); };
 window.pickDay = (val) => { if(val) setViewDate(val); };
 
-function countForDay(key){
-  return activityList.filter(a=>a.fecha===key && LIST_TYPES[a.type]).length;
-}
-
 function dayTitle(key){
   const hoy = todayKey();
   if(key===hoy) return 'Hoy';
@@ -484,12 +509,42 @@ function dayTitle(key){
   return 'Registro';
 }
 
+// Fecha corta para los récords (ej. "sáb, 14 nov"); añade el año si no es el actual
+function shortDate(key){
+  const d = dateFromKey(key);
+  const opts = {weekday:'short',day:'numeric',month:'short'};
+  if(d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+  return d.toLocaleDateString('es-ES', opts);
+}
+
+// Estadisticas por dia a partir del registro de actividad:
+//  - titulos: cuantos titulos distintos registraste ese dia
+//  - tipos: cuantas categorias distintas (anime, manga, libro...)
+//  - caps: capitulos/episodios avanzados (solo anime, manga y series)
+function dayStats(){
+  const stats = {};
+  activityList.forEach(a=>{
+    if(!LIST_TYPES[a.type]) return;
+    const s = stats[a.fecha] || (stats[a.fecha] = {titulos:0, tipos:new Set(), caps:0});
+    s.titulos++;
+    s.tipos.add(a.type);
+    if(CAP_TYPES.includes(a.type)) s.caps = round2(s.caps + (a.hasta - a.desde));
+  });
+  return stats;
+}
+
 function renderToday(){
   const panel = document.getElementById('today-panel');
   if(!panel) return;
+
+  // Guarda el scroll actual del calendario para no perderlo al redibujar
+  const oldStrip = panel.querySelector('.day-strip');
+  if(oldStrip && oldStrip.clientWidth > 0) stripScroll = oldStrip.scrollLeft;
+
   const hoy = todayKey();
   const key = viewKey();
   const esHoy = key===hoy;
+  const stats = dayStats();
   const items = activityList
     .filter(a=>a.fecha===key && LIST_TYPES[a.type])
     .sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
@@ -517,20 +572,56 @@ function renderToday(){
     </div>`;
   }).join('');
 
-  // Tira con los ultimos 7 dias (el ultimo es hoy)
+  // Calendario desplazable: desde el dia mas antiguo con registro (minimo 30 dias atras) hasta hoy
+  let start = addDays(hoy, -29);
+  Object.keys(stats).forEach(k=>{ if(k < start && k <= hoy) start = k; });
+  if(key < start) start = key;
   const wd = ['dom','lun','mar','mié','jue','vie','sáb'];
   let strip = '';
-  for(let i=6;i>=0;i--){
-    const k = addDays(hoy, -i);
+  let k = start, guard = 0;
+  while(k <= hoy && guard++ < 4000){
     const d = dateFromKey(k);
-    const n = countForDay(k);
+    const n = stats[k] ? stats[k].titulos : 0;
+    const mes = d.toLocaleDateString('es-ES', {month:'short'}).replace('.','');
     strip += `
       <button class="day-chip ${k===key?'active':''}" onclick="setViewDayKey('${k}')" title="${n} título${n===1?'':'s'}">
-        <span class="day-chip-wd">${i===0?'hoy':wd[d.getDay()]}</span>
+        <span class="day-chip-wd">${k===hoy?'hoy':wd[d.getDay()]}</span>
         <span class="day-chip-n">${d.getDate()}</span>
+        <span class="day-chip-mo">${mes}</span>
         <span class="day-chip-count">${n?('● '+n):''}</span>
       </button>`;
+    k = addDays(k, 1);
   }
+
+  // Récords de todo el historial (en empate gana el día más reciente)
+  let bestCaps = null, bestDiv = null;
+  Object.keys(stats).sort().forEach(dk=>{
+    const s = stats[dk];
+    if(s.caps > 0 && (!bestCaps || s.caps >= stats[bestCaps].caps)) bestCaps = dk;
+    if(!bestDiv
+      || s.titulos > stats[bestDiv].titulos
+      || (s.titulos === stats[bestDiv].titulos && s.tipos.size >= stats[bestDiv].tipos.size)) bestDiv = dk;
+  });
+  const recCaps = bestCaps ? `
+    <div class="record" onclick="setViewDayKey('${bestCaps}')" title="Capítulos/episodios (anime, manga y series). Pulsa para ver ese día">
+      <div class="record-label"><i class="ti ti-trophy"></i> Más capítulos</div>
+      <div class="record-val">${formatProgreso(stats[bestCaps].caps, 0.01)}</div>
+      <div class="record-sub">${shortDate(bestCaps)}</div>
+    </div>` : `
+    <div class="record empty">
+      <div class="record-label"><i class="ti ti-trophy"></i> Más capítulos</div>
+      <div class="record-sub">Sin datos aún</div>
+    </div>`;
+  const recDiv = bestDiv ? `
+    <div class="record" onclick="setViewDayKey('${bestDiv}')" title="Día con más títulos distintos. Pulsa para ver ese día">
+      <div class="record-label"><i class="ti ti-sparkles"></i> Más variedad</div>
+      <div class="record-val">${stats[bestDiv].titulos} título${stats[bestDiv].titulos===1?'':'s'}</div>
+      <div class="record-sub">${stats[bestDiv].tipos.size} categoría${stats[bestDiv].tipos.size===1?'':'s'} · ${shortDate(bestDiv)}</div>
+    </div>` : `
+    <div class="record empty">
+      <div class="record-label"><i class="ti ti-sparkles"></i> Más variedad</div>
+      <div class="record-sub">Sin datos aún</div>
+    </div>`;
 
   const vacio = esHoy
     ? 'Todavía no has registrado nada hoy. Pulsa + en cualquier título al terminar un capítulo o episodio.'
@@ -546,11 +637,35 @@ function renderToday(){
         ${esHoy ? '' : '<button class="day-today-btn" onclick="goToday()">Hoy</button>'}
       </div>
     </div>
-    <div class="day-strip">${strip}</div>
+    <div class="day-row">
+      <div class="day-strip">${strip}</div>
+      <div class="records">${recCaps}${recDiv}</div>
+    </div>
     ${items.length
       ? `<div class="today-list">${rows}</div>`
       : `<div class="today-empty">${vacio}</div>`}
   `;
+
+  // Coloca el scroll del calendario: la primera vez al final (hoy); después mantiene la posición
+  const st = panel.querySelector('.day-strip');
+  if(st && st.clientWidth > 0){
+    st.scrollLeft = (stripScroll === null) ? st.scrollWidth : stripScroll;
+    // Si el día seleccionado queda fuera de la vista, lo acerca
+    const act = st.querySelector('.day-chip.active');
+    if(act){
+      const l = act.offsetLeft, r = l + act.offsetWidth;
+      if(l < st.scrollLeft) st.scrollLeft = Math.max(0, l - 8);
+      else if(r > st.scrollLeft + st.clientWidth) st.scrollLeft = r - st.clientWidth + 8;
+    }
+    stripScroll = st.scrollLeft;
+    // La rueda del ratón desplaza el calendario en horizontal
+    st.addEventListener('wheel', e=>{
+      if(Math.abs(e.deltaY) > Math.abs(e.deltaX) && st.scrollWidth > st.clientWidth){
+        e.preventDefault();
+        st.scrollLeft += e.deltaY;
+      }
+    }, {passive:false});
+  }
 }
 window.setViewDayKey = (k) => setViewDate(k);
 
@@ -595,13 +710,13 @@ function renderListTab(content, type){
   let filtered;
   if(activeFilter==='todos') filtered = list;
   else if(activeFilter==='temporada') filtered = list.filter(it=>it.temporada);
-  else filtered = list.filter(it=>it.estado===activeFilter);
+  else filtered = list.filter(it=>efectivoEstado(type, it.estado)===activeFilter);
   if(q) filtered = filtered.filter(it=>it.titulo.toLowerCase().includes(q));
 
   const counts = {
     todos: list.length,
-    viendo: list.filter(i=>i.estado==='viendo').length,
-    pendiente: list.filter(i=>i.estado==='pendiente').length,
+    viendo: list.filter(i=>efectivoEstado(type, i.estado)==='viendo').length,
+    pendiente: list.filter(i=>efectivoEstado(type, i.estado)==='pendiente').length,
     terminado: list.filter(i=>i.estado==='terminado').length,
     aldia: list.filter(i=>i.estado==='aldia').length,
     temporada: list.filter(i=>i.temporada).length
@@ -616,7 +731,7 @@ function renderListTab(content, type){
           <button class="clear-search" onclick="clearSearchType('${type}')"><i class="ti ti-x"></i></button>
         </div>
         <button class="filter-chip ${activeFilter==='todos'?'active':''}" onclick="setFilter('todos')">Todos (${counts.todos})</button>
-        <button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${cfg.estadoViendo} (${counts.viendo})</button>
+        ${type!=='pelicula' ? `<button class="filter-chip ${activeFilter==='viendo'?'active':''}" onclick="setFilter('viendo')">${cfg.estadoViendo} (${counts.viendo})</button>` : ''}
         <button class="filter-chip ${activeFilter==='pendiente'?'active':''}" onclick="setFilter('pendiente')">Pendiente (${counts.pendiente})</button>
         <button class="filter-chip ${activeFilter==='terminado'?'active':''}" onclick="setFilter('terminado')">Terminado (${counts.terminado})</button>
         ${type==='manga' ? `<button class="filter-chip ${activeFilter==='aldia'?'active':''}" onclick="setFilter('aldia')">Al día (${counts.aldia})</button>` : ''}
@@ -642,6 +757,7 @@ function renderListTab(content, type){
   grid.innerHTML = filtered.map(it=>{
     const pct = it.total ? Math.min(100, Math.round((it.actual/it.total)*100)) : 0;
     const barColor = `var(--c-${type})`;
+    const est = efectivoEstado(type, it.estado);
     return `
     <div class="card">
       ${it.rating ? `<div class="rating-badge"><i class="ti ti-star" style="font-size:12px"></i>${it.rating}</div>` : ''}
@@ -653,7 +769,7 @@ function renderListTab(content, type){
       <div class="card-body">
         <div class="card-title">${esc(it.titulo)}</div>
         <div class="card-badges">
-          <span class="card-status status-${it.estado}">${estadoLabel(type, it.estado)}</span>
+          <span class="card-status status-${est}">${estadoLabel(type, est)}</span>
           ${type==='anime' && it.temporada ? `<span class="card-status badge-temporada"><i class="ti ti-calendar-event" style="font-size:10px"></i> Temporada</span>` : ''}
         </div>
         <div class="progress-row">
@@ -704,6 +820,10 @@ function setupTypeFields(type){
   const optAldia = document.getElementById('opt-aldia');
   optAldia.hidden = type!=='manga';
   optAldia.disabled = type!=='manga';
+  // "Viendo" no existe en películas
+  const optViendo = document.getElementById('opt-viendo');
+  optViendo.hidden = type==='pelicula';
+  optViendo.disabled = type==='pelicula';
   // "De temporada" solo en anime
   document.getElementById('temporada-group').style.display = type==='anime' ? 'block' : 'none';
 }
@@ -754,7 +874,7 @@ window.editTitulo = (type, id) => {
     document.getElementById('cover-preview').style.display='none';
   }
   document.getElementById('f-titulo').value = it.titulo;
-  document.getElementById('f-estado').value = it.estado;
+  document.getElementById('f-estado').value = efectivoEstado(type, it.estado);
   document.getElementById('f-temporada').checked = !!it.temporada;
   const fActual = document.getElementById('f-actual');
   const fTotal = document.getElementById('f-total');
@@ -774,7 +894,7 @@ window.saveTitulo = async () => {
   const totalVal = document.getElementById('f-total').value;
   const data = {
     titulo,
-    estado: document.getElementById('f-estado').value,
+    estado: efectivoEstado(currentModalType, document.getElementById('f-estado').value),
     actual: parseProgreso(actualVal, cfg.step) ?? 0,
     total: totalVal ? parseProgreso(totalVal, cfg.step) : null,
     rating: currentRating,
@@ -818,7 +938,8 @@ window.stepProgress = async (type, id, dir) => {
     } else {
       updates.estado = 'terminado';
     }
-  } else if(actual > 0 && it.estado === 'pendiente'){
+  } else if(actual > 0 && it.estado === 'pendiente' && type!=='pelicula'){
+    // Las películas no tienen estado "viendo": se quedan pendientes hasta terminarlas
     updates.estado = 'viendo';
   }
   await updateDoc(userDoc(cfg.col, id), updates);
@@ -851,7 +972,7 @@ window.incrementTotal = async (type, id) => {
   if(cfg.step >= 1) newTotal = Math.trunc(newTotal);
   const updates = { total: newTotal };
   // Si había un capítulo nuevo, deja de estar terminado / al día
-  if((it.estado === 'terminado' || it.estado === 'aldia') && (it.actual||0) < newTotal) updates.estado = 'viendo';
+  if((it.estado === 'terminado' || it.estado === 'aldia') && (it.actual||0) < newTotal) updates.estado = type==='pelicula' ? 'pendiente' : 'viendo';
   await updateDoc(userDoc(cfg.col, id), updates);
   showToast('Añadido al total ✓');
 };
