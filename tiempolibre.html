@@ -127,6 +127,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card:hover{border-color:var(--border2)}
 .card-cover{width:100%;aspect-ratio:2/3;background:var(--bg3);object-fit:cover;display:block}
 .card-cover-placeholder{width:100%;aspect-ratio:2/3;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:32px}
+.card-cover-link{display:block;color:inherit;text-decoration:none;cursor:pointer}
+.card-cover-link:hover .card-cover,.card-cover-link:hover .card-cover-placeholder{opacity:.85}
 .card-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
 .card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-badges{display:flex;gap:4px;flex-wrap:wrap}
@@ -258,6 +260,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="form-group">
       <label>URL de la portada (opcional)</label>
       <input type="text" id="f-cover-url" placeholder="Pega aquí el enlace de una imagen..." oninput="onCoverUrlInput()">
+    </div>
+    <div class="form-group">
+      <label>Enlace al pulsar la portada (opcional)</label>
+      <input type="text" id="f-enlace" placeholder="https://...">
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -404,6 +410,13 @@ function formatProgreso(n, step){
 }
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Normaliza el enlace de una portada: añade https:// si falta y evita caracteres que rompan el HTML
+function safeUrl(u){
+  u = (u||'').trim();
+  if(!u) return '';
+  if(!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  return u.replace(/"/g,'%22').replace(/'/g,'%27').replace(/</g,'%3C').replace(/>/g,'%3E');
+}
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -758,6 +771,14 @@ function renderListTab(content, type){
     const pct = it.total ? Math.min(100, Math.round((it.actual/it.total)*100)) : 0;
     const barColor = `var(--c-${type})`;
     const est = efectivoEstado(type, it.estado);
+    // Portada (o icono) clicable si el título tiene enlace
+    const coverHtml = it.cover
+      ? `<img class="card-cover" src="${it.cover}" alt="${esc(it.titulo)}">`
+      : `<div class="card-cover-placeholder"><i class="ti ti-${cfg.icon}"></i></div>`;
+    const enlace = safeUrl(it.enlace);
+    const portada = enlace
+      ? `<a class="card-cover-link" href="${enlace}" target="_blank" rel="noopener noreferrer" title="Abrir enlace">${coverHtml}</a>`
+      : coverHtml;
     return `
     <div class="card">
       ${it.rating ? `<div class="rating-badge"><i class="ti ti-star" style="font-size:12px"></i>${it.rating}</div>` : ''}
@@ -765,7 +786,7 @@ function renderListTab(content, type){
         <button class="card-act-btn" onclick="editTitulo('${type}','${it.id}')" aria-label="Editar"><i class="ti ti-edit"></i></button>
         <button class="card-act-btn" onclick="deleteTitulo('${type}','${it.id}')" aria-label="Eliminar"><i class="ti ti-trash"></i></button>
       </div>
-      ${it.cover ? `<img class="card-cover" src="${it.cover}" alt="${esc(it.titulo)}">` : `<div class="card-cover-placeholder"><i class="ti ti-${cfg.icon}"></i></div>`}
+      ${portada}
       <div class="card-body">
         <div class="card-title">${esc(it.titulo)}</div>
         <div class="card-badges">
@@ -836,6 +857,7 @@ window.openModal = (type) => {
   document.getElementById('modal-title').textContent = 'Añadir ' + cfg.label;
   document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value='';
+  document.getElementById('f-enlace').value='';
   document.getElementById('cover-preview').style.display='none';
   document.getElementById('f-titulo').value='';
   document.getElementById('f-estado').value='pendiente';
@@ -867,6 +889,7 @@ window.editTitulo = (type, id) => {
   document.getElementById('modal-title').textContent = 'Editar';
   document.getElementById('f-progreso-label').textContent = cfg.progresoLabel;
   document.getElementById('f-cover-url').value = it.cover || '';
+  document.getElementById('f-enlace').value = it.enlace || '';
   if(it.cover){
     document.getElementById('cover-img').src = it.cover;
     document.getElementById('cover-preview').style.display='flex';
@@ -900,6 +923,7 @@ window.saveTitulo = async () => {
     rating: currentRating,
     notas: document.getElementById('f-notas').value.trim(),
     cover: selectedCover,
+    enlace: safeUrl(document.getElementById('f-enlace').value),
     updatedAt: new Date().toISOString()
   };
   if(currentModalType==='anime') data.temporada = document.getElementById('f-temporada').checked;
